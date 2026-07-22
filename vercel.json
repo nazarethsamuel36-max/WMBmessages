@@ -17,6 +17,10 @@
   ],
   "routes": [
     {
+      "src": "/",
+      "dest": "/index.html"
+    },
+    {
       "src": "/dock",
       "dest": "/dock.html"
     },
