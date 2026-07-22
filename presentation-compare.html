@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBS Sermon Presentation - Compare</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #808080;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            gap: 20px;
+        }
+
+        h1 {
+            display: none;
+        }
+
+        .container {
+            display: none;
+        }
+
+        /* Preview Container - Full viewport */
+        .preview-container {
+            position: relative;
+            flex: 1;
+            background: #808080;
+            overflow: hidden;
+        }
+
+        .preview {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: #808080;
+            overflow: hidden;
+        }
+
+        /* Background image */
+        .background-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0;
+        }
+
+        /* Placeholder background pattern */
+        .preview::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(255,255,255,0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Lower Third - 30% OVERLAY CONFIGURATION
+         * - Height: 30% of viewport height
+         * - Background: rgba(0, 0, 0, 0.85) with 10px blur
+         * - Metadata font: Times New Roman, 22px, #CFCFCF
+         * - Quote font: 28px, line-height 1.5, white
+         * - Gap between sections: 10px
+         */
+        .lower-third {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 10;
+            height: 30%;
+        }
+
+        /* Metadata Section */
+        .metadata {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 15px;
+            padding: 15px 30px;
+            justify-content: center;
+        }
+
+        /* Enhanced divider for metadata-quote separation */
+        .metadata::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
+        }
+
+        .quote {
+            padding: 5px 10px;
+        }
+
+        .title {
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .date {
+            color: #CFCFCF;
+            font-family: 'Times New Roman', Times, serif;
+            letter-spacing: 1px;
+            font-size: 22px;
+        }
+
+        .title {
+            color: #CFCFCF;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 22px;
+        }
+
+        .paragraph {
+            color: #CFCFCF;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 22px;
+        }
+
+        /* Quote Section */
+        .quote {
+            color: #fff;
+            line-height: 1.5;
+            font-weight: 400;
+            font-size: 28px;
+            overflow    : hidden;
+            max-height: 100%;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        /* Controls Panel */
+        .controls {
+            background: #2a2a2a;
+            padding: 25px;
+            border-radius: 8px;
+            width: 320px;
+            max-height: 800px;
+            overflow-y: auto;
+            color: #fff;
+        }
+
+        .controls h2 {
+            margin-bottom: 20px;
+            font-size: 18px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #ccc;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: #444;
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #ffd700;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .control-group .value {
+            display: inline-block;
+            margin-left: 10px;
+            font-size: 12px;
+            color: #ffd700;
+            min-width: 40px;
+        }
+    </style>
+</head>
+<body>
+    <h1>OBS Sermon Presentation - Compare</h1>
+    
+    <!-- Preview -->
+    <div class="preview-container" id="previewContainer">
+        <div class="preview" id="preview">
+            <!-- Background Image -->
+            <img class="background-image" id="bgImage" src="mesagepdf/Screenshot 2026-07-21 215142.png" alt="">
+            
+            <!-- Lower Third -->
+            <div class="lower-third" id="lowerThird">
+                <!-- Metadata -->
+                <div class="metadata">
+                    <span class="date" id="dateDisplay">65-0402M</span>
+                    <span class="title" id="titleDisplay">The Seed Shall Not Be Heir With the Shuck</span>
+                    <span class="paragraph" id="paragraphDisplay">¶157</span>
+                </div>
+                
+                <!-- Quote -->
+                <div class="quote" id="quoteDisplay">
+                    God changes His methods, but He never changes His nature. Every age has seen Him reveal Himself differently, yet His Word remains exactly the same. Faith recognizes His appearing in every generation.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Controls Panel -->
+    <div class="controls">
+        <h2>Controls</h2>
+        
+        <div class="control-group">
+            <label>Quote Font Size</label>
+            <input type="range" id="quoteFontSize" min="16" max="48" value="28">
+            <span class="value" id="quoteFontSizeValue">28px</span>
+        </div>
+        
+        <div class="control-group">
+            <label>Title Font Size</label>
+            <input type="range" id="titleFontSize" min="16" max="36" value="22">
+            <span class="value" id="titleFontSizeValue">22px</span>
+        </div>
+        
+        <div class="control-group">
+            <label>Date Font Size</label>
+            <input type="range" id="dateFontSize" min="16" max="32" value="22">
+            <span class="value" id="dateFontSizeValue">22px</span>
+        </div>
+        
+        <div class="control-group">
+            <label>Paragraph Font Size</label>
+            <input type="range" id="paragraphFontSize" min="16" max="32" value="22">
+            <span class="value" id="paragraphFontSizeValue">22px</span>
+        </div>
+        
+        <div class="control-group">
+            <label>Lower Third Height (%)</label>
+            <input type="range" id="lowerThirdHeight" min="10" max="50" value="30">
+            <span class="value" id="lowerThirdHeightValue">30%</span>
+        </div>
+        
+        <div class="control-group">
+            <label>Padding</label>
+            <input type="range" id="padding" min="0" max="30" value="0">
+            <span class="value" id="paddingValue">0px</span>
+        </div>
+        
+        <div class="control-group">
+            <label>Line Height</label>
+            <input type="range" id="lineHeight" min="1" max="2" step="0.1" value="1.5">
+            <span class="value" id="lineHeightValue">1.5</span>
+        </div>
+    </div>
+
+    <script>
+        // Elements
+        const preview = document.getElementById('preview');
+        const previewContainer = document.getElementById('previewContainer');
+        const lowerThird = document.getElementById('lowerThird');
+        const quoteDisplay = document.getElementById('quoteDisplay');
+        const dateDisplay = document.getElementById('dateDisplay');
+        const titleDisplay = document.getElementById('titleDisplay');
+        const paragraphDisplay = document.getElementById('paragraphDisplay');
+
+        // Controls
+        const quoteFontSize = document.getElementById('quoteFontSize');
+        const titleFontSize = document.getElementById('titleFontSize');
+        const dateFontSize = document.getElementById('dateFontSize');
+        const paragraphFontSize = document.getElementById('paragraphFontSize');
+        const lowerThirdHeight = document.getElementById('lowerThirdHeight');
+        const padding = document.getElementById('padding');
+        const lineHeight = document.getElementById('lineHeight');
+
+        // Value displays
+        const quoteFontSizeValue = document.getElementById('quoteFontSizeValue');
+        const titleFontSizeValue = document.getElementById('titleFontSizeValue');
+        const dateFontSizeValue = document.getElementById('dateFontSizeValue');
+        const paragraphFontSizeValue = document.getElementById('paragraphFontSizeValue');
+        const lowerThirdHeightValue = document.getElementById('lowerThirdHeightValue');
+        const paddingValue = document.getElementById('paddingValue');
+        const lineHeightValue = document.getElementById('lineHeightValue');
+
+        // Update styles
+        function updateStyles() {
+            const qfs = quoteFontSize.value;
+            const tfs = titleFontSize.value;
+            const dfs = dateFontSize.value;
+            const pfs = paragraphFontSize.value;
+            const lth = lowerThirdHeight.value;
+            const pad = padding.value;
+            const lh = lineHeight.value;
+
+            // Update value displays
+            quoteFontSizeValue.textContent = `${qfs}px`;
+            titleFontSizeValue.textContent = `${tfs}px`;
+            dateFontSizeValue.textContent = `${dfs}px`;
+            paragraphFontSizeValue.textContent = `${pfs}px`;
+            lowerThirdHeightValue.textContent = `${lth}%`;
+            paddingValue.textContent = `${pad}px`;
+            lineHeightValue.textContent = lh;
+
+            // Apply styles
+            quoteDisplay.style.fontSize = `${qfs}px`;
+            titleDisplay.style.fontSize = `${tfs}px`;
+            dateDisplay.style.fontSize = `${dfs}px`;
+            paragraphDisplay.style.fontSize = `${pfs}px`;
+            lowerThird.style.height = `${lth}%`;
+            lowerThird.style.padding = `${pad}px ${pad * 2}px`;
+            quoteDisplay.style.lineHeight = lh;
+        }
+
+        // Event listeners
+        quoteFontSize.addEventListener('input', updateStyles);
+        titleFontSize.addEventListener('input', updateStyles);
+        dateFontSize.addEventListener('input', updateStyles);
+        paragraphFontSize.addEventListener('input', updateStyles);
+        lowerThirdHeight.addEventListener('input', updateStyles);
+        padding.addEventListener('input', updateStyles);
+        lineHeight.addEventListener('input', updateStyles);
+
+        // Initial setup
+        updateStyles();
+    </script>
+</body>
+</html>

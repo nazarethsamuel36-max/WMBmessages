@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBS Sermon Presentation Simulator</title>
+    <script src="presentation_frame.js"></script>
+    <script src="text_measurer.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #808080;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        h1 {
+            display: none;
+        }
+
+        .container {
+            display: none;
+        }
+
+        /* Preview Container - Centers the 1280×720 preview canvas */
+        .preview-container {
+            position: relative;
+            background: #808080;
+            overflow: hidden;
+        }
+
+        .preview {
+            position: relative;
+            width: 1920px;
+            height: 1080px;
+            background: #808080;
+            overflow: hidden;
+            transform-origin: top left;
+            border: 2px solid #666;
+        }
+
+        /* Background image */
+        .background-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0;
+        }
+
+        /* Placeholder background pattern */
+        .preview::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(255,255,255,0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Lower Third - DEFAULT OVERLAY CONFIGURATION
+         * This is the default overlay used across all projects
+         * - Height: 324px (30% of 1920x1080 preview canvas)
+         * - Background: rgba(0, 0, 0, 0.85) with 10px blur
+         * - Metadata font: Times New Roman, 24px, #CFCFCF
+         * - Quote font: 36px, line-height 1.5, white
+         * - Gap between sections: 10px
+         */
+        .lower-third {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 10;
+            height: 324px; /* 30% of 1080px virtual canvas */
+        }
+
+        /* Background Style: Solid Black */
+        .lower-third.style-solid {
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: none;
+        }
+
+        /* Background Style: Glass/Blur */
+        .lower-third.style-glass {
+            background: rgba(20, 20, 20, 0.35);
+            backdrop-filter: blur(18px);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Background Style: Gradient */
+        .lower-third.style-gradient {
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
+            backdrop-filter: none;
+        }
+
+        /* Background Style: Text Shadow Only */
+        .lower-third.style-shadow {
+            background: transparent;
+            backdrop-filter: none;
+        }
+
+        .lower-third.style-shadow .quote,
+        .lower-third.style-shadow .date,
+        .lower-third.style-shadow .title,
+        .lower-third.style-shadow .paragraph {
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 1);
+        }
+
+        /* Background Style: Stroke + Shadow */
+        .lower-third.style-stroke {
+            background: transparent;
+            backdrop-filter: none;
+        }
+
+        .lower-third.style-stroke .quote,
+        .lower-third.style-stroke .date,
+        .lower-third.style-stroke .title,
+        .lower-third.style-stroke .paragraph {
+            text-shadow:
+                -1px -1px 0 #000,
+                1px -1px 0 #000,
+                -1px 1px 0 #000,
+                1px 1px 0 #000,
+                0 2px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Metadata Section */
+        .metadata {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 15px 30px;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* Enhanced divider for metadata-quote separation */
+        .metadata::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
+        }
+
+        .quote {
+            padding: 1px 20px 10px 20px;
+            text-align: justify;
+            overflow: hidden;
+            max-height: 100%;
+        }
+
+        .title {
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .date {
+            color: #CFCFCF;
+            font-family: 'Times New Roman', Times, serif;
+            letter-spacing: 1px;
+            font-size: 16px;
+        }
+
+        .title {
+            color: #CFCFCF;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 16px;
+        }
+
+        .paragraph {
+            color: #CFCFCF;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 16px;
+        }
+
+        /* Quote Section */
+        .quote {
+            color: #fff;
+            line-height: 1.5;
+            font-weight: 400;
+            font-size: 22px;
+            overflow    : hidden;
+            max-height: 100%;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        /* Controls Panel */
+        .controls {
+            background: #2a2a2a;
+            padding: 25px;
+            border-radius: 8px;
+            width: 320px;
+            max-height: 800px;
+            overflow-y: auto;
+            color: #fff;
+        }
+
+        .controls h2 {
+            margin-bottom: 20px;
+            font-size: 18px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #ccc;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: #444;
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #ffd700;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .control-group .value {
+            display: inline-block;
+            margin-left: 10px;
+            font-size: 12px;
+            color: #ffd700;
+            min-width: 40px;
+        }
+
+        /* Statistics Panel */
+        .stats {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            font-size: 13px;
+        }
+
+        .stats h3 {
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #ffd700;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #333;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .stat-label {
+            color: #888;
+        }
+
+        .stat-value {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* Responsive scaling */
+        @media (max-width: 1400px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>OBS Sermon Presentation Simulator</h1>
+    
+    <!-- Preview -->
+    <div class="preview-container" id="previewContainer">
+        <div class="preview" id="preview">
+            <!-- Background Image -->
+            <img class="background-image" id="bgImage" src="Screenshot 2026-07-21 215142.png" alt="">
+            
+            <!-- Lower Third -->
+            <div class="lower-third" id="lowerThird">
+                <!-- Metadata -->
+                <div class="metadata">
+                    <span class="date" id="dateDisplay"></span>
+                    <span class="title" id="titleDisplay"></span>
+                    <span class="paragraph" id="paragraphDisplay"></span>
+                </div>
+                
+                <!-- Quote -->
+                <div class="quote" id="quoteDisplay">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Controls (Hidden) -->
+    <!-- <div class="controls">...</div> -->
+
+    <script>
+        // Elements
+        const preview = document.getElementById('preview');
+        const previewContainer = document.getElementById('previewContainer');
+        const lowerThird = document.getElementById('lowerThird');
+        const quoteDisplay = document.getElementById('quoteDisplay');
+        const dateDisplay = document.getElementById('dateDisplay');
+        const titleDisplay = document.getElementById('titleDisplay');
+        const paragraphDisplay = document.getElementById('paragraphDisplay');
+        const bgImage = document.getElementById('bgImage');
+
+        // Apply Layout contract from PresentationFrame to DOM elements
+        function initLayout() {
+            const frame = window.PresentationFrame;
+            if (!frame) {
+                console.error("PresentationFrame layout contract is not loaded!");
+                return;
+            }
+
+            // Apply logical canvas base dimensions to preview
+            preview.style.width = `${frame.canvasWidth}px`;
+            preview.style.height = `${frame.canvasHeight}px`;
+
+            // Apply derived overlay/lower-third heights
+            lowerThird.style.height = `${frame.overlay.height}px`;
+            lowerThird.style.gap = `${frame.gap}px`;
+
+            // Apply metadata styles
+            const metadataEl = document.querySelector('.metadata');
+            if (metadataEl) {
+                metadataEl.style.padding = `${frame.metadata.padding.top}px ${frame.metadata.padding.right}px ${frame.metadata.padding.bottom}px ${frame.metadata.padding.left}px`;
+            }
+            dateDisplay.style.fontSize = `${frame.metadata.fontSize}px`;
+            titleDisplay.style.fontSize = `${frame.metadata.fontSize}px`;
+            paragraphDisplay.style.fontSize = `${frame.metadata.fontSize}px`;
+
+            // Apply quote styles
+            quoteDisplay.style.padding = `${frame.quote.padding.top}px ${frame.quote.padding.right}px ${frame.quote.padding.bottom}px ${frame.quote.padding.left}px`;
+            quoteDisplay.style.fontSize = `${frame.quote.fontSize}px`;
+            quoteDisplay.style.lineHeight = `${frame.quote.lineHeight}`;
+
+            scalePreview();
+        }
+
+        // Scale presentation frame visually to fit browser viewport preserving aspect ratio
+        function scalePreview() {
+            const frame = window.PresentationFrame;
+            if (!frame) return;
+
+            const canvasWidth = frame.canvasWidth;
+            const canvasHeight = frame.canvasHeight;
+            const browserWidth = window.innerWidth;
+            const browserHeight = window.innerHeight;
+
+            const scaleX = browserWidth / canvasWidth;
+            const scaleY = browserHeight / canvasHeight;
+            const scale = Math.min(scaleX, scaleY);
+
+            preview.style.transform = `scale(${scale})`;
+
+            // Center container sizing
+            previewContainer.style.width = `${canvasWidth * scale}px`;
+            previewContainer.style.height = `${canvasHeight * scale}px`;
+        }
+
+        window.addEventListener('resize', scalePreview);
+
+        // ============================================================
+        // DOCK INTEGRATION
+        // ============================================================
+        let presentationSlides = null;
+        let currentSlideData = null;
+
+        // Handle dock commands
+        function handleDockCommand(command) {
+            console.log('handleDockCommand called:', command);
+            
+            switch (command.action) {
+                case 'loadPresentation':
+                    console.log('Loading presentation data:', command.data);
+                    presentationSlides = command.data;
+                    break;
+                case 'showSlide':
+                    console.log('Showing slide:', command.data);
+                    showSlide(command.data);
+                    break;
+                case 'clearSlide':
+                    console.log('Clearing slide');
+                    clearSlide();
+                    break;
+                default:
+                    console.error('Unknown command:', command.action);
+            }
+        }
+
+        // Show slide
+        function showSlide(data) {
+            const { messageIndex, paragraphIndex, slideIndex } = data;
+            
+            if (!presentationSlides || !presentationSlides.paragraphs) {
+                console.error('presentationSlides not loaded or missing paragraphs');
+                return;
+            }
+            
+            const paragraphData = presentationSlides.paragraphs[paragraphIndex];
+            if (!paragraphData || !paragraphData.slides) {
+                console.error('paragraphData or slides missing');
+                return;
+            }
+            
+            const slideData = paragraphData.slides[slideIndex];
+            if (!slideData) {
+                console.error('slideData missing');
+                return;
+            }
+            
+            currentSlideData = slideData;
+            
+            // Update metadata
+            if (slideData.metadata) {
+                dateDisplay.textContent = slideData.metadata.book || '';
+                titleDisplay.textContent = slideData.metadata.title || '';
+                paragraphDisplay.textContent = `¶${slideData.metadata.paragraph || ''}`;
+            }
+            
+            // Render text lines exactly as parsed
+            const lines = slideData.lines || slideData.quoteLines || [];
+            if (lines.length > 0) {
+                quoteDisplay.innerHTML = lines.join('<br>');
+            } else {
+                quoteDisplay.innerHTML = '';
+            }
+            
+            console.log('Slide displayed successfully');
+        }
+
+        // Clear slide
+        function clearSlide() {
+            currentSlideData = null;
+            quoteDisplay.innerHTML = '';
+        }
+
+        // Listen for localStorage changes (cross-window communication)
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'presentationCommand' && e.newValue) {
+                try {
+                    const command = JSON.parse(e.newValue);
+                    handleDockCommand(command);
+                } catch (error) {
+                    console.error('Error parsing dock command:', error);
+                }
+            }
+        });
+
+        // Listen for BroadcastChannel messages
+        const presentationChannel = new BroadcastChannel('presentation_channel');
+        presentationChannel.onmessage = (event) => {
+            handleDockCommand(event.data);
+        };
+
+        // Listen for custom events (same-window communication)
+        window.addEventListener('presentationCommand', (e) => {
+            handleDockCommand(e.detail);
+        });
+
+        // Initial setup
+        initLayout();
+    </script>
+</body>
+</html>

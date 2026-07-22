@@ -1,0 +1,83 @@
+# Environment variables — NEVER commit these
+.env
+.env.*
+.env.local
+.env.production
+
+# Node.js
+node_modules/
+npm-debug.log*
+package-lock.json
+
+# Large binary/PDF files
+mesagepdf/
+extracted from pdf/
+*.pdf
+
+# Raw text working files
+raw_text_*.txt
+for rawwww.txt
+
+# Scraper / utility scripts (not needed for the web app)
+advanced_scraper.js
+batch_processor.js
+check_empty_files.js
+check_empty_pdfs.js
+check_single_paragraph.js
+check_tracts.js
+compare_files.js
+count_messages.js
+download_*.js
+download_*.py
+dynamic_scraper.js
+extract_*.js
+extract_*.py
+find_*.js
+individual_page_scraper.js
+inspect_db_structure.js
+investigate_download.js
+migrate_*.js
+move_tracts.js
+network_scraper.js
+parse_sermon*.js
+pdf_parser.py
+presentation_parser.js
+scrape_sermons.js
+test_single.js
+download_all_years.py
+download_cab_files.py
+download_with_ocr.py
+extract_sermon_list.js
+parser.js
+
+# Logs and reports
+*.log
+*.txt
+empty_files_report.txt
+empty_pdfs_report.txt
+failed_downloads.txt
+missing_json.txt
+missing_messages.json
+still_missing*.txt
+verification_*.txt
+
+# Temporary / debug files
+page_debug.html
+artifacts_response.html
+message_details.html
+messagehub_*.html
+
+# Extra/duplicate sermon JSON files (only keep the core ones)
+sermon_47-0412_fixed.json
+sermon_47-0412_improved.json
+sermon_47-0412_puppeteer.json
+sermon_65-0410_improved.json
+presentation_slides.json
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Screenshots
+Screenshot*.png
