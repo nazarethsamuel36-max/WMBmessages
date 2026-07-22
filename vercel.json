@@ -1,47 +1,18 @@
 {
   "version": 2,
   "name": "wmb-messages",
-  "builds": [
+  "rewrites": [
     {
-      "src": "**/*.html",
-      "use": "@vercel/static"
+      "source": "/dock",
+      "destination": "/dock.html"
     },
     {
-      "src": "**/*.js",
-      "use": "@vercel/static"
+      "source": "/overlay",
+      "destination": "/default-overlay.html"
     },
-    {
-      "src": "**/*.json",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/",
-      "dest": "/index.html"
-    },
-    {
-      "src": "/dock",
-      "dest": "/dock.html"
-    },
-    {
-      "src": "/overlay",
-      "dest": "/default-overlay.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
-  ],
-  "headers": [
     {
       "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600"
-        }
-      ]
+      "destination": "/$1"
     }
   ]
 }
