@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WMB Messages - Sermon Presentation System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #f5c842;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(245, 200, 66, 0.3);
+        }
+
+        .subtitle {
+            color: #a0a0a0;
+            font-size: 1.1rem;
+            margin-bottom: 50px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(245, 200, 66, 0.3);
+            box-shadow: 0 10px 40px rgba(245, 200, 66, 0.1);
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .card h2 {
+            color: #ffffff;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            color: #a0a0a0;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .url-box {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .url-text {
+            flex: 1;
+            color: #f5c842;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #f5c842 0%, #d4a830 100%);
+            color: #1a1a2e;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(245, 200, 66, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .copy-feedback {
+            color: #22c55e;
+            font-size: 0.85rem;
+            margin-top: 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .copy-feedback.show {
+            opacity: 1;
+        }
+
+        .instructions {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 25px;
+            text-align: left;
+        }
+
+        .instructions h3 {
+            color: #f5c842;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        .instructions ol {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+            line-height: 1.8;
+            padding-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 Sermon Presentation System</h1>
+        <p class="subtitle">William Branham Messages - OBS Integration</p>
+
+        <div class="cards">
+            <!-- Controller Card -->
+            <div class="card">
+                <div class="card-icon">🎛️</div>
+                <h2>Controller</h2>
+                <p>Control panel for browsing messages, selecting paragraphs, and managing presentation slides.</p>
+                <div class="url-box">
+                    <span class="url-text" id="controllerUrl">dock.html</span>
+                </div>
+                <div class="btn-group">
+                    <a href="dock.html" class="btn btn-primary" target="_blank">
+                        🔗 Open Controller
+                    </a>
+                    <button class="btn btn-secondary" onclick="copyUrl('controllerUrl', this)">
+                        📋 Copy URL
+                    </button>
+                </div>
+                <div class="copy-feedback" id="controllerFeedback">URL copied to clipboard!</div>
+            </div>
+
+            <!-- Presentation Card -->
+            <div class="card">
+                <div class="card-icon">📺</div>
+                <h2>Presentation</h2>
+                <p>OBS overlay display for showing sermon quotes with metadata in a professional lower-third format.</p>
+                <div class="url-box">
+                    <span class="url-text" id="presentationUrl">default-overlay.html</span>
+                </div>
+                <div class="btn-group">
+                    <a href="default-overlay.html" class="btn btn-primary" target="_blank">
+                        🔗 Open Presentation
+                    </a>
+                    <button class="btn btn-secondary" onclick="copyUrl('presentationUrl', this)">
+                        📋 Copy URL
+                    </button>
+                </div>
+                <div class="copy-feedback" id="presentationFeedback">URL copied to clipboard!</div>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>📋 How to Use</h3>
+            <ol>
+                <li><strong>Open the Controller</strong> - Browse and select sermon messages</li>
+                <li><strong>Open the Presentation</strong> - This is your OBS browser source overlay</li>
+                <li><strong>In OBS</strong> - Add a Browser Source with the Presentation URL</li>
+                <li><strong>Control slides</strong> - Use the Controller to send slides to the Presentation view</li>
+                <li><strong>Copy URLs</strong> - Use the copy buttons to share links with others</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        function copyUrl(elementId, button) {
+            const urlElement = document.getElementById(elementId);
+            const fullUrl = window.location.origin + '/' + urlElement.textContent;
+            
+            navigator.clipboard.writeText(fullUrl).then(() => {
+                const feedbackId = elementId.replace('Url', 'Feedback');
+                const feedback = document.getElementById(feedbackId);
+                feedback.classList.add('show');
+                
+                setTimeout(() => {
+                    feedback.classList.remove('show');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                alert('Failed to copy URL. Please select and copy manually.');
+            });
+        }
+
+        // Set full URLs on page load
+        window.addEventListener('load', () => {
+            const baseUrl = window.location.origin + '/';
+            document.getElementById('controllerUrl').textContent = baseUrl + 'dock.html';
+            document.getElementById('presentationUrl').textContent = baseUrl + 'default-overlay.html';
+        });
+    </script>
+</body>
+</html>
