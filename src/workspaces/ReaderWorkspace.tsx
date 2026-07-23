@@ -2,8 +2,8 @@ import React, { useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 
 export const ReaderWorkspace: React.FC = () => {
-  const { state, openMessage, selectReading, toggleLive, addToSetlist } = useApp();
-  const { messages, currentMessageIndex, paragraphs, reading, live, isLive } = state;
+  const { state, selectReading, toggleLive, addToSetlist } = useApp();
+  const { paragraphs, reading, live, isLive, currentMessageIndex } = state;
 
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -32,33 +32,12 @@ export const ReaderWorkspace: React.FC = () => {
 
   return (
     <div className="reader-workspace">
-      {/* Sidebar Message List */}
-      <div className="reader-msg-panel">
-        <div className="panel-label">Messages</div>
-        <div className="reader-msg-list">
-          {messages.length === 0 ? (
-            <div className="loading-msg">Loading…</div>
-          ) : (
-            messages.map((msg, index) => (
-              <div
-                key={msg.id || index}
-                className={`msg-item ${index === currentMessageIndex ? 'active' : ''}`}
-                onClick={() => openMessage(index)}
-              >
-                <div className="msg-item-date">{msg.date}</div>
-                <div className="msg-item-title">{msg.title}</div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* Reader Main Content */}
-      <div className="reader-content" ref={contentRef}>
+      {/* Reader Main Content - full width */}
+      <div className="reader-content" ref={contentRef} style={{ width: '100%' }}>
         {paragraphs.length === 0 ? (
           <div className="reader-empty">
             <div className="reader-empty-icon">📖</div>
-            <p>Select a message from the sidebar or search to start reading</p>
+            <p>Select a message from the Messages sidebar or search to start reading</p>
           </div>
         ) : (
           paragraphs.map((para, pi) => {
@@ -69,16 +48,14 @@ export const ReaderWorkspace: React.FC = () => {
               <div
                 key={pi}
                 id={`para-${pi}`}
-                className={`para-card ${isReadingPara ? 'is-reading' : ''} ${
-                  isLivePara ? 'is-live' : ''
-                }`}
+                className={`para-card ${isReadingPara ? 'is-reading' : ''}`}
                 onClick={() => toggleLive(pi, 0)}
               >
                 {/* Paragraph Header */}
                 <div className="para-card-header">
                   <div className="para-label">
-                    <div className="para-state-dot"></div>
-                    <span className="para-num">¶ {para.paragraph}</span>
+                    <div className="para-state-dot" style={{ backgroundColor: isLivePara ? 'var(--green)' : undefined, boxShadow: isLivePara ? '0 0 5px var(--green)' : undefined }}></div>
+                    <span className="para-num" style={{ color: isLivePara ? 'var(--green)' : undefined }}>¶ {para.paragraph}</span>
                   </div>
                   <div className="para-actions">
                     <button
@@ -97,7 +74,7 @@ export const ReaderWorkspace: React.FC = () => {
                 {/* RESPONSIVE text - natural wrapping */}
                 <div className="para-text">{para.text}</div>
 
-                {/* Slides (unwrapped representation for presentation check) - only show for active reading paragraph */}
+                {/* Slides - only show for active reading paragraph */}
                 {isReadingPara && para.slides && (
                   <div className="slides-container" onClick={(e) => e.stopPropagation()}>
                     {para.slides.map((slide, si) => {

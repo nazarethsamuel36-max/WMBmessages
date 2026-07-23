@@ -8,12 +8,13 @@ import { SetlistWorkspace } from '../../workspaces/SetlistWorkspace';
 import { SettingsWorkspace } from '../../workspaces/SettingsWorkspace';
 
 export const AppShell: React.FC = () => {
-  const { state, setReaderQuery, selectReading, toggleLive } = useApp();
-  const { activeWorkspace, readerQuery, paragraphs, reading } = state;
+  const { state, setReaderQuery, setSearchQuery, selectReading, toggleLive } = useApp();
+  const { activeWorkspace, readerQuery, searchQuery, paragraphs, reading } = state;
 
   // ─── In-reader search ───────────────────────────────────────────────────
   const [readerSearchActive, setReaderSearchActive] = useState(false);
   const readerInputRef = useRef<HTMLInputElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const readerSearchResults = useMemo(() => {
     const q = readerQuery.trim().toLowerCase();
@@ -29,6 +30,15 @@ export const AppShell: React.FC = () => {
     setReaderSearchActive(false);
     // Use a custom event to communicate to ReaderWorkspace
     window.dispatchEvent(new CustomEvent('readerJumpTo', { detail: { paragraphIndex: idx } }));
+  };
+
+  const handleSearchInput = (val: string) => {
+    // Auto-hyphenate date queries e.g. 650402 → 65-0402
+    let v = val;
+    if (/^\d{3,}/.test(v) && !v.includes('-')) {
+      v = v.slice(0, 2) + '-' + v.slice(2);
+    }
+    setSearchQuery(v);
   };
 
   // ─── Keyboard Navigation ────────────────────────────────────────────────
@@ -118,7 +128,26 @@ export const AppShell: React.FC = () => {
         </div>
       </div>
 
-      {/* In-Reader Search Bar — only shown when Reader is active */}
+      {/* Global Search Bar — only shown when Search workspace is active */}
+      {activeWorkspace === 'search' && (
+        <div className="reader-search-zone">
+          <input
+            ref={searchInputRef}
+            type="text"
+            placeholder="Search by title, date (65-0410), paragraph, or quote…"
+            value={searchQuery}
+            onChange={e => handleSearchInput(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Escape') {
+                setSearchQuery('');
+                searchInputRef.current?.blur();
+              }
+            }}
+          />
+        </div>
+      )}
+
+      {/* In-Reader Search Bar — only shown when Reader workspace is active */}
       {activeWorkspace === 'reader' && (
         <div className="reader-search-zone" style={{ position: 'relative' }}>
           <input
@@ -187,3 +216,4 @@ export const AppShell: React.FC = () => {
     </div>
   );
 };
+export default AppShell;

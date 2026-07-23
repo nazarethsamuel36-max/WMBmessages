@@ -25,6 +25,7 @@ export interface AppState {
   isLive: boolean;
   setlist: SetlistEntry[];
   readerQuery: string;
+  searchQuery: string;
 }
 
 const initialState: AppState = {
@@ -38,6 +39,7 @@ const initialState: AppState = {
   isLive: false,
   setlist: [],
   readerQuery: '',
+  searchQuery: '',
 };
 
 // ─── Actions ─────────────────────────────────────────────────────────────────
@@ -51,7 +53,8 @@ type Action =
   | { type: 'CLEAR_LIVE' }
   | { type: 'ADD_TO_SETLIST'; payload: SetlistEntry }
   | { type: 'REMOVE_FROM_SETLIST'; payload: number }
-  | { type: 'SET_READER_QUERY'; payload: string };
+  | { type: 'SET_READER_QUERY'; payload: string }
+  | { type: 'SET_SEARCH_QUERY'; payload: string };
 
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
@@ -81,6 +84,8 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, setlist: state.setlist.filter((_, i) => i !== action.payload) };
     case 'SET_READER_QUERY':
       return { ...state, readerQuery: action.payload };
+    case 'SET_SEARCH_QUERY':
+      return { ...state, searchQuery: action.payload };
     default:
       return state;
   }
@@ -96,6 +101,7 @@ interface AppContextValue {
   addToSetlist: (pi: number) => void;
   removeFromSetlist: (idx: number) => void;
   setReaderQuery: (q: string) => void;
+  setSearchQuery: (q: string) => void;
   handleSearchResult: (messageIndex: number, paragraphNo?: number) => void;
 }
 
@@ -221,6 +227,10 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     dispatch({ type: 'SET_READER_QUERY', payload: q });
   }, []);
 
+  const setSearchQuery = useCallback((q: string) => {
+    dispatch({ type: 'SET_SEARCH_QUERY', payload: q });
+  }, []);
+
   const setWorkspace = useCallback((w: Workspace) => {
     dispatch({ type: 'SET_WORKSPACE', payload: w });
   }, []);
@@ -241,6 +251,7 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       addToSetlist,
       removeFromSetlist,
       setReaderQuery,
+      setSearchQuery,
       handleSearchResult,
     }}>
       {children}
