@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { Message, Paragraph } from '../types';
+import { normalizeText } from '../utils/textNormalizer';
 
 export async function getMessages(): Promise<Message[]> {
   let allMessages: Message[] = [];
@@ -30,24 +31,57 @@ export async function getMessages(): Promise<Message[]> {
 export async function getParagraphs(msgId: number | string): Promise<{ message: Message; paragraphs: Paragraph[] }> {
   const [{ data: mData, error: mErr }, { data: pData, error: pErr }] = await Promise.all([
     supabase.from('messages').select('book_id, title, date').eq('book_id', msgId).single(),
-    supabase.from('paragraphs').select('paragraph_no, text').eq('book_id', msgId).order('paragraph_no', { ascending: true })
+    supabase.from('paragraphs').select('paragraph_no, text, normalized_text').eq('book_id', msgId).order('paragraph_no', { ascending: true })
   ]);
 
   if (mErr) throw mErr;
+  
+  // If normalized_text column doesn't exist (pre-migration), fall back to text only
+  if (pErr && pErr.code === '42703') {
+    const { data: fallbackData, error: fallbackError } = await supabase
+      .from('paragraphs')
+      .select('paragraph_no, text')
+      .eq('book_id', msgId)
+      .order('paragraph_no', { ascending: true });
+    
+    if (fallbackError) throw fallbackError;
+    
+    return {
+      message: { id: mData.book_id, title: mData.title, date: mData.date },
+      paragraphs: fallbackData.map(p => ({ paragraph: p.paragraph_no, text: p.text }))
+    };
+  }
+
   if (pErr) throw pErr;
 
   return {
     message: { id: mData.book_id, title: mData.title, date: mData.date },
-    paragraphs: pData.map(p => ({ paragraph: p.paragraph_no, text: p.text }))
+    paragraphs: pData.map(p => ({ paragraph: p.paragraph_no, text: p.text, normalized_text: p.normalized_text }))
   };
 }
 
 export async function searchQuotes(query: string): Promise<any[]> {
+  // Normalize the query once before searching
+  const normalizedQuery = normalizeText(query);
+  
+  // Try to search against normalized_text first (post-migration)
   const { data, error } = await supabase
     .from('paragraphs')
     .select('book_id, paragraph_no, text, messages(title, date)')
-    .ilike('text', `%${query}%`)
+    .ilike('normalized_text', `%${normalizedQuery}%`)
     .limit(15);
+
+  // If normalized_text column doesn't exist (pre-migration), fall back to text
+  if (error && error.code === '42703') {
+    const { data: fallbackData, error: fallbackError } = await supabase
+      .from('paragraphs')
+      .select('book_id, paragraph_no, text, messages(title, date)')
+      .filter('text', 'ilike', `%${query.toLowerCase()}%`)
+      .limit(15);
+    
+    if (fallbackError) throw fallbackError;
+    return fallbackData || [];
+  }
 
   if (error) throw error;
   return data || [];

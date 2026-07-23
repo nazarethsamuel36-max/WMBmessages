@@ -23,6 +23,7 @@ export interface Slide {
 export interface Paragraph {
   paragraph: number;
   text: string;
+  normalized_text?: string;
   slides?: Slide[];
 }
 

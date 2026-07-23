@@ -1,5 +1,6 @@
 import { Message, SearchResult } from '../types';
 import { searchQuotes } from '../services/messageService';
+import { normalizeText } from '../utils/textNormalizer';
 
 class SearchIntentRouter {
   handlers: any[] = [];
@@ -52,10 +53,10 @@ class CombinedDateParagraphHandler {
   execute(query: string, messages: Message[]): SearchResult[] {
     const match = query.match(/^(\d{2}-?\d{0,5}[A-Z]?)\s+(\d+)$/i);
     if (!match) return [];
-    const datePart = match[1].toLowerCase();
+    const datePart = normalizeText(match[1]);
     const paraNum = parseInt(match[2], 10);
 
-    const mIdx = messages.findIndex(m => m.date.toLowerCase().includes(datePart));
+    const mIdx = messages.findIndex(m => normalizeText(m.date).includes(datePart));
     if (mIdx >= 0) {
       return [{
         type: 'paragraph',
@@ -75,9 +76,9 @@ class DateSearchHandler {
     return /^\d{2}-?\d{0,5}[A-Z]?$/.test(query);
   }
   execute(query: string, messages: Message[]): SearchResult[] {
-    const q = query.toLowerCase();
+    const q = normalizeText(query);
     return messages
-      .filter(m => m.date.toLowerCase().includes(q))
+      .filter(m => normalizeText(m.date).includes(q))
       .map(m => ({
         type: 'message',
         badge: '📖 Message',
@@ -93,9 +94,9 @@ class TitleSearchHandler {
     return query.length >= 2 && !/^\d+$/.test(query) && !/^\d{2}-?/.test(query);
   }
   execute(query: string, messages: Message[]): SearchResult[] {
-    const q = query.toLowerCase();
+    const q = normalizeText(query);
     return messages
-      .filter(m => m.title.toLowerCase().includes(q))
+      .filter(m => normalizeText(m.title).includes(q))
       .map(m => ({
         type: 'message',
         badge: '📖 Message',

@@ -2,7 +2,7 @@
 -- NOTE: Tables already exist - this is for RLS policies only
 -- Actual table structure:
 -- Messages: book_id, title, date
--- Paragraphs: id, book_id, paragraph_no, text
+-- Paragraphs: id, book_id, paragraph_no, text, normalized_text
 
 -- Enable Row Level Security if not already enabled
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;

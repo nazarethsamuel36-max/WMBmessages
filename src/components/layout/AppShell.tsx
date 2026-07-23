@@ -6,6 +6,7 @@ import { SearchWorkspace } from '../../workspaces/SearchWorkspace';
 import { ReaderWorkspace } from '../../workspaces/ReaderWorkspace';
 import { SetlistWorkspace } from '../../workspaces/SetlistWorkspace';
 import { SettingsWorkspace } from '../../workspaces/SettingsWorkspace';
+import { normalizeText } from '../../utils/textNormalizer';
 
 export const AppShell: React.FC = () => {
   const { state, setReaderQuery, setSearchQuery, selectReading, toggleLive } = useApp();
@@ -17,11 +18,15 @@ export const AppShell: React.FC = () => {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const readerSearchResults = useMemo(() => {
-    const q = readerQuery.trim().toLowerCase();
+    const q = normalizeText(readerQuery.trim());
     if (!q || paragraphs.length === 0) return [];
     return paragraphs
       .map((p, idx) => ({ idx, para: p }))
-      .filter(({ para }) => para.text?.toLowerCase().includes(q));
+      .filter(({ para }) => {
+        // Search against normalized_text if available, otherwise fall back to text
+        const searchText = para.normalized_text || normalizeText(para.text || '');
+        return searchText.includes(q);
+      });
   }, [readerQuery, paragraphs]);
 
   const handleReaderSearchSelect = (idx: number) => {
@@ -182,13 +187,15 @@ export const AppShell: React.FC = () => {
           {readerSearchActive && readerSearchResults.length > 0 && (
             <div className="reader-search-results">
               {readerSearchResults.slice(0, 20).map(({ idx, para }) => {
-                const q = readerQuery.toLowerCase();
+                const q = normalizeText(readerQuery.trim());
                 const text = para.text || '';
-                const matchIdx = text.toLowerCase().indexOf(q);
+                const searchText = para.normalized_text || normalizeText(text);
+                const matchIdx = searchText.indexOf(q);
                 const snippet = matchIdx >= 0
-                  ? text.slice(Math.max(0, matchIdx - 40), matchIdx + q.length + 60)
+                  ? text.slice(Math.max(0, matchIdx - 40), matchIdx + readerQuery.length + 60)
                   : text.slice(0, 100);
-                const parts = snippet.split(new RegExp(`(${readerQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'));
+                const escapedQuery = readerQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const parts = snippet.split(new RegExp(`(${escapedQuery})`, 'gi'));
 
                 return (
                   <div
@@ -200,7 +207,7 @@ export const AppShell: React.FC = () => {
                     <div className="rsr-text">
                       {matchIdx > 40 && '…'}
                       {parts.map((part, i) =>
-                        part.toLowerCase() === q ? <mark key={i}>{part}</mark> : part
+                        normalizeText(part) === q ? <mark key={i}>{part}</mark> : part
                       )}
                       …
                     </div>

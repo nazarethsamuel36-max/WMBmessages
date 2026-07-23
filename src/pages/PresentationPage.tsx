@@ -93,7 +93,6 @@ export const PresentationPage: React.FC = () => {
 
   const metaDate = activeSlide?.metadata?.date || '';
   const metaTitle = activeSlide?.metadata?.title || '';
-  const year = metaDate.split('-')[0] || '';
   const paraNumber = activeSlide?.metadata?.paragraph || '';
 
   return (
@@ -117,7 +116,7 @@ export const PresentationPage: React.FC = () => {
       {/* Lower Third presentation block */}
       <div className={`lower-third ${isActive ? 'active' : ''}`}>
         <div className="overlay-metadata-bar">
-          <div className="overlay-year">{year}</div>
+          <div className="overlay-year">{metaDate}</div>
           <div className="overlay-title">{metaTitle}</div>
           <div className="overlay-para">{paraNumber}</div>
         </div>
