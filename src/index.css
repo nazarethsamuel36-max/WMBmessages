@@ -996,6 +996,7 @@ body {
   background: transparent;
   overflow: hidden;
   transform-origin: top left;
+  border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
 .presentation-bg-image {
@@ -1043,15 +1044,30 @@ body {
 .overlay-metadata-bar {
   height: 56px;
   padding: 10px 45px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 2px solid rgba(255,255,255,0.7);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: rgba(255,255,255,0.9);
+  color: #ffffff;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-size: 22px;
+}
+
+.overlay-year {
+  flex: 1;
+  text-align: left;
+}
+
+.overlay-title {
+  flex: 2;
+  text-align: center;
+}
+
+.overlay-para {
+  flex: 1;
+  text-align: right;
 }
 
 .overlay-location-info {

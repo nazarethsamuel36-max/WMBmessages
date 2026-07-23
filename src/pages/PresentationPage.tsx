@@ -16,7 +16,10 @@ export const PresentationPage: React.FC = () => {
       if (!canvasRef.current) return;
       const w = window.innerWidth;
       const h = window.innerHeight;
-      const scale = Math.min(w / 1920, h / 1080);
+      const marginPercent = 0.05; // 5% margin on all sides
+      const availableW = w * (1 - marginPercent * 2);
+      const availableH = h * (1 - marginPercent * 2);
+      const scale = Math.min(availableW / 1920, availableH / 1080);
       canvasRef.current.style.transform = `scale(${scale})`;
       canvasRef.current.style.left = `${(w - 1920 * scale) / 2}px`;
       canvasRef.current.style.top = `${(h - 1080 * scale) / 2}px`;
@@ -90,7 +93,8 @@ export const PresentationPage: React.FC = () => {
 
   const metaDate = activeSlide?.metadata?.date || '';
   const metaTitle = activeSlide?.metadata?.title || '';
-  const metaInfo = [metaDate, metaTitle].filter(Boolean).join('  ');
+  const year = metaDate.split('-')[0] || '';
+  const paraNumber = activeSlide?.metadata?.paragraph || '';
 
   return (
     <div
@@ -113,8 +117,9 @@ export const PresentationPage: React.FC = () => {
       {/* Lower Third presentation block */}
       <div className={`lower-third ${isActive ? 'active' : ''}`}>
         <div className="overlay-metadata-bar">
-          <div className="overlay-message-info">{metaInfo}</div>
-          <div className="overlay-location-info"></div>
+          <div className="overlay-year">{year}</div>
+          <div className="overlay-title">{metaTitle}</div>
+          <div className="overlay-para">{paraNumber}</div>
         </div>
         <div className="overlay-quote-container">
           <div className="overlay-quote-text">
