@@ -5,30 +5,42 @@ import { Slide } from '../types';
 export const PresentationPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const isPreview = searchParams.get('preview') === 'true'; // ?preview=true displays background image
+  const isBanner = searchParams.get('banner') === 'true'; // ?banner=true creates 30% height banner
 
   const [activeSlide, setActiveSlide] = useState<Slide | null>(null);
   const [isActive, setIsActive] = useState<boolean>(false);
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  // Dynamic 16:9 scaler
+  // Dynamic 16:9 scaler or banner mode
   useEffect(() => {
     const handleResize = () => {
       if (!canvasRef.current) return;
       const w = window.innerWidth;
       const h = window.innerHeight;
-      const marginPercent = 0.05; // 5% margin on all sides
-      const availableW = w * (1 - marginPercent * 2);
-      const availableH = h * (1 - marginPercent * 2);
-      const scale = Math.min(availableW / 1920, availableH / 1080);
-      canvasRef.current.style.transform = `scale(${scale})`;
-      canvasRef.current.style.left = `${(w - 1920 * scale) / 2}px`;
-      canvasRef.current.style.top = `${(h - 1080 * scale) / 2}px`;
+
+      if (isBanner) {
+        // Banner mode: 30% height, full width, positioned at bottom
+        canvasRef.current.style.transform = 'none';
+        canvasRef.current.style.left = '0';
+        canvasRef.current.style.top = `${h * 0.7}px`; // 30% from top (70% down)
+        canvasRef.current.style.width = '100%';
+        canvasRef.current.style.height = `${h * 0.3}px`;
+      } else {
+        // 16:9 mode with proportional margins
+        const marginPercent = 0.05; // 5% margin on all sides
+        const availableW = w * (1 - marginPercent * 2);
+        const availableH = h * (1 - marginPercent * 2);
+        const scale = Math.min(availableW / 1920, availableH / 1080);
+        canvasRef.current.style.transform = `scale(${scale})`;
+        canvasRef.current.style.left = `${(w - 1920 * scale) / 2}px`;
+        canvasRef.current.style.top = `${(h - 1080 * scale) / 2}px`;
+      }
     };
 
     window.addEventListener('resize', handleResize);
     handleResize(); // Initial call
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [isBanner]);
 
   // BroadcastChannel and localStorage listeners for instant updates
   useEffect(() => {
@@ -98,7 +110,7 @@ export const PresentationPage: React.FC = () => {
   return (
     <div
       ref={canvasRef}
-      className="presentation-canvas-container"
+      className={`presentation-canvas-container ${isBanner ? 'banner-mode' : ''}`}
       style={{ position: 'absolute' }}
     >
       {/* Background Image (Rendered only if ?preview=true parameter is set, otherwise transparent for OBS keying) */}

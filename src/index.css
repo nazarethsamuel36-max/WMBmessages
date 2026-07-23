@@ -999,6 +999,12 @@ body {
   border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
+.presentation-canvas-container.banner-mode {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
 .presentation-bg-image {
   position: absolute;
   top: 0;
@@ -1034,6 +1040,11 @@ body {
   transform: translateY(40px);
   transition: opacity 0.5s cubic-bezier(0.16,1,0.3,1), transform 0.5s cubic-bezier(0.16,1,0.3,1);
   backdrop-filter: blur(12px);
+}
+
+.banner-mode .lower-third {
+  height: 100%;
+  transform: translateY(0);
 }
 
 .lower-third.active {
