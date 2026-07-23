@@ -152,7 +152,20 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   }, []);
 
   const selectReading = useCallback((pi: number, si: number) => {
+    const current = stateRef.current;
     dispatch({ type: 'SET_READING', payload: { paragraphIndex: pi, slideIndex: si } });
+
+    if (current.isLive) {
+      dispatch({
+        type: 'SET_LIVE',
+        payload: { messageIndex: current.currentMessageIndex, paragraphIndex: pi, slideIndex: si },
+      });
+      const activePara = current.paragraphs[pi];
+      const activeSlide = activePara?.slides?.[si];
+      if (activeSlide) {
+        sendToPresentation('showSlide', activeSlide);
+      }
+    }
   }, []);
 
   const toggleLive = useCallback((pi: number, si = 0) => {

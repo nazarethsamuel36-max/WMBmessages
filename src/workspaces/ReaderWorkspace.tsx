@@ -97,32 +97,34 @@ export const ReaderWorkspace: React.FC = () => {
                 {/* RESPONSIVE text - natural wrapping */}
                 <div className="para-text">{para.text}</div>
 
-                {/* Slides (unwrapped representation for presentation check) */}
-                <div className="slides-container" onClick={(e) => e.stopPropagation()}>
-                  {para.slides?.map((slide, si) => {
-                    const isReadingSlide = isReadingPara && si === reading.slideIndex;
-                    const isLiveSlide = isLivePara && si === live.slideIndex;
+                {/* Slides (unwrapped representation for presentation check) - only show for active reading paragraph */}
+                {isReadingPara && para.slides && (
+                  <div className="slides-container" onClick={(e) => e.stopPropagation()}>
+                    {para.slides.map((slide, si) => {
+                      const isReadingSlide = isReadingPara && si === reading.slideIndex;
+                      const isLiveSlide = isLivePara && si === live.slideIndex;
 
-                    return (
-                      <div
-                        key={si}
-                        className={`slide-row ${isReadingSlide ? 'slide-reading' : ''} ${
-                          isLiveSlide ? 'slide-live' : ''
-                        }`}
-                        onClick={() => selectReading(pi, si)}
-                      >
-                        <div className="slide-row-meta">
-                          <span className="slide-num">
-                            Slide {si + 1} of {para.slides?.length || 1}
-                          </span>
+                      return (
+                        <div
+                          key={si}
+                          className={`slide-row ${isReadingSlide ? 'slide-reading' : ''} ${
+                            isLiveSlide ? 'slide-live' : ''
+                          }`}
+                          onClick={() => selectReading(pi, si)}
+                        >
+                          <div className="slide-row-meta">
+                            <span className="slide-num">
+                              Slide {si + 1} of {para.slides?.length || 1}
+                            </span>
+                          </div>
+                          <div className="slide-row-text">
+                            {slide.lines.join('\n')}
+                          </div>
                         </div>
-                        <div className="slide-row-text">
-                          {slide.lines.join('\n')}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             );
           })
