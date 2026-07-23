@@ -620,7 +620,7 @@ body {
   border-radius: 50%;
   border: 1px solid var(--border-mid);
   background: none;
-  color: var(--text-muted);
+  color: #ffffff;
   font-size: 14px;
   line-height: 1;
   cursor: pointer;
@@ -631,8 +631,8 @@ body {
 }
 
 .btn-add-setlist:hover {
-  border-color: var(--text-primary);
-  color: var(--text-primary);
+  border-color: #ffffff;
+  opacity: 0.8;
 }
 
 /* ——— Responsive paragraph text ——— */

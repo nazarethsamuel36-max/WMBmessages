@@ -53,40 +53,41 @@ export const SearchWorkspace: React.FC = () => {
   };
 
   return (
-    <div className="reader-workspace">
-      {/* Sidebar Message List */}
-      <div className="reader-msg-panel">
-        <div className="panel-label">Messages</div>
-        <div className="reader-msg-list">
-          {messages.length === 0 ? (
-            <div className="loading-msg">Loading…</div>
-          ) : (
-            messages.map((msg, index) => (
-              <div
-                key={msg.id || index}
-                className={`msg-item ${index === currentMessageIndex ? 'active' : ''}`}
-                onClick={() => openMessage(index)}
-              >
-                <div className="msg-item-date">{msg.date}</div>
-                <div className="msg-item-title">{msg.title}</div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* Search results main content */}
-      <div className="reader-content">
+    <div className="search-workspace" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div className="reader-content" style={{ width: '100%', flex: 1, overflowY: 'auto' }}>
         {searchQuery.trim().length === 0 ? (
-          <div className="search-empty">
-            <div style={{ fontSize: '2rem', marginBottom: '8px', opacity: 0.3 }}>⌕</div>
-            Search sermons by title, date, paragraph number, or quote text.
-            <br /><br />
-            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-              Try: <em>65-0410</em> · <em>Leadership</em> · <em>50</em> · <em>"faith is"</em>
-            </span>
+          // If no search query, show the full list of messages in the middle (no sidebar)
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '4px' }}>
+            <div className="panel-label" style={{ border: 'none', paddingLeft: 0 }}>Sermon Messages</div>
+            {messages.length === 0 ? (
+              <div className="loading-msg">Loading messages…</div>
+            ) : (
+              messages.map((msg, index) => (
+                <div
+                  key={msg.id || index}
+                  className={`msg-item ${index === currentMessageIndex ? 'active' : ''}`}
+                  onClick={() => {
+                    openMessage(index);
+                    // Navigate to Reader workspace immediately upon message selection
+                    window.dispatchEvent(new CustomEvent('readerJumpTo', { detail: { paragraphIndex: 0 } }));
+                  }}
+                  style={{
+                    background: 'var(--bg-card)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius)',
+                    padding: '12px 14px',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s'
+                  }}
+                >
+                  <div className="msg-item-date" style={{ fontSize: '11px', color: 'var(--green)' }}>{msg.date}</div>
+                  <div className="msg-item-title" style={{ fontSize: '13px', color: 'var(--text-primary)', marginTop: '2px' }}>{msg.title}</div>
+                </div>
+              ))
+            )}
           </div>
         ) : (
+          // If there is a search query, show search results in the middle
           <>
             {searching && <div className="search-hint">Searching…</div>}
 
@@ -140,3 +141,4 @@ export const SearchWorkspace: React.FC = () => {
     </div>
   );
 };
+export default SearchWorkspace;
