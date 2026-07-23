@@ -1,0 +1,127 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Slide } from '../types';
+
+export const PresentationPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const isPreview = searchParams.get('preview') === 'true'; // ?preview=true displays background image
+
+  const [activeSlide, setActiveSlide] = useState<Slide | null>(null);
+  const [isActive, setIsActive] = useState<boolean>(false);
+  const canvasRef = useRef<HTMLDivElement>(null);
+
+  // Dynamic 16:9 scaler
+  useEffect(() => {
+    const handleResize = () => {
+      if (!canvasRef.current) return;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const scale = Math.min(w / 1920, h / 1080);
+      canvasRef.current.style.transform = `scale(${scale})`;
+      canvasRef.current.style.left = `${(w - 1920 * scale) / 2}px`;
+      canvasRef.current.style.top = `${(h - 1080 * scale) / 2}px`;
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Initial call
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // BroadcastChannel and localStorage listeners for instant updates
+  useEffect(() => {
+    const handleCommand = (cmd: { action: string; data: any }) => {
+      if (!cmd) return;
+
+      switch (cmd.action) {
+        case 'showSlide':
+          setActiveSlide(cmd.data);
+          setIsActive(true);
+          break;
+        case 'clearDisplay':
+          setIsActive(false);
+          break;
+        default:
+          break;
+      }
+    };
+
+    // 1. BroadcastChannel listener
+    const presentationChannel = new BroadcastChannel('presentation_channel');
+    presentationChannel.onmessage = (event) => {
+      handleCommand(event.data);
+    };
+
+    // 2. LocalStorage storage event listener (fallback)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'presentationCommand' && e.newValue) {
+        try {
+          const cmd = JSON.parse(e.newValue);
+          handleCommand(cmd);
+        } catch (err) {
+          console.error('Failed to parse command from localStorage', err);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    // Read initial command state if present
+    const initialCmd = localStorage.getItem('presentationCommand');
+    if (initialCmd) {
+      try {
+        const cmd = JSON.parse(initialCmd);
+        handleCommand(cmd);
+      } catch (e) {}
+    }
+
+    return () => {
+      presentationChannel.close();
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
+  // Set the page background class
+  useEffect(() => {
+    document.body.className = 'overlay-body-transparent';
+    return () => {
+      document.body.className = '';
+    };
+  }, []);
+
+  const metaDate = activeSlide?.metadata?.date || '';
+  const metaTitle = activeSlide?.metadata?.title || '';
+  const metaInfo = [metaDate, metaTitle].filter(Boolean).join('  ');
+
+  return (
+    <div
+      ref={canvasRef}
+      className="presentation-canvas-container"
+      style={{ position: 'absolute' }}
+    >
+      {/* Background Image (Rendered only if ?preview=true parameter is set, otherwise transparent for OBS keying) */}
+      {isPreview && (
+        <>
+          <img
+            className="presentation-bg-image"
+            src="Screenshot 2026-07-21 215142.png"
+            alt="Presentation background"
+          />
+          <div className="presentation-gradient-overlay"></div>
+        </>
+      )}
+
+      {/* Lower Third presentation block */}
+      <div className={`lower-third ${isActive ? 'active' : ''}`}>
+        <div className="overlay-metadata-bar">
+          <div className="overlay-message-info">{metaInfo}</div>
+          <div className="overlay-location-info"></div>
+        </div>
+        <div className="overlay-quote-container">
+          <div className="overlay-quote-text">
+            {activeSlide?.lines.join('\n')}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
