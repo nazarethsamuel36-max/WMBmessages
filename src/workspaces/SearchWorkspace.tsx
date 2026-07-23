@@ -4,7 +4,7 @@ import { searchRouter } from '../search/searchIntent';
 import { SearchResult } from '../types';
 
 export const SearchWorkspace: React.FC = () => {
-  const { state, openMessage, handleSearchResult } = useApp();
+  const { state, openMessage, handleSearchResult, setWorkspace } = useApp();
   const { messages, paragraphs, currentMessageIndex, searchQuery } = state;
 
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -66,8 +66,9 @@ export const SearchWorkspace: React.FC = () => {
                 <div
                   key={msg.id || index}
                   className={`msg-item ${index === currentMessageIndex ? 'active' : ''}`}
-                  onClick={() => {
-                    openMessage(index);
+                  onClick={async () => {
+                    await openMessage(index);
+                    setWorkspace('reader');
                     // Navigate to Reader workspace immediately upon message selection
                     window.dispatchEvent(new CustomEvent('readerJumpTo', { detail: { paragraphIndex: 0 } }));
                   }}
