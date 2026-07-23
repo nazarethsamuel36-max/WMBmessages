@@ -553,6 +553,7 @@ body {
   transition: border-color 0.15s, box-shadow 0.15s;
   background: var(--bg-card);
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .para-card:hover {
