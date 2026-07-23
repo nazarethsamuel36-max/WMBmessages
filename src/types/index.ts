@@ -1,3 +1,5 @@
+export type Workspace = 'search' | 'reader' | 'setlist' | 'settings';
+
 export interface Message {
   id: number | string;
   title: string;
