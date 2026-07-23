@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 export const WelcomePage: React.FC = () => {
-  const [origin, setOrigin] = useState<string>('http://localhost:5173');
+  const [origin, setOrigin] = useState<string>(import.meta.env.VITE_APP_URL || 'https://wm-bmessages.vercel.app');
   const [copiedDock, setCopiedDock] = useState<boolean>(false);
   const [copiedOverlay, setCopiedOverlay] = useState<boolean>(false);
   const [copiedOverlayPreview, setCopiedOverlayPreview] = useState<boolean>(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setOrigin(window.location.origin);
+      setOrigin(import.meta.env.VITE_APP_URL || 'https://wm-bmessages.vercel.app');
     }
   }, []);
 
