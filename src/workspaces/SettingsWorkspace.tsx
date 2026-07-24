@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PresentationTheme } from '../parser/presentationTheme';
+import { PresentationTheme, saveQuoteFontSize, saveMetadataFontSize } from '../parser/presentationTheme';
 import { useApp } from '../context/AppContext';
 
 export const SettingsWorkspace: React.FC = () => {
@@ -10,8 +10,8 @@ export const SettingsWorkspace: React.FC = () => {
   const handleQuoteFontSizeChange = async (value: number) => {
     if (value >= 12 && value <= 120) {
       setQuoteFontSize(value);
-      // Update theme dynamically
-      PresentationTheme.quote.fontSize = value;
+      // Save to localStorage and update theme
+      saveQuoteFontSize(value);
       // Trigger re-render of presentation by updating CSS variables
       updateCSSVariables();
       // Regenerate slides with new font size
@@ -22,7 +22,7 @@ export const SettingsWorkspace: React.FC = () => {
   const handleMetadataFontSizeChange = async (value: number) => {
     if (value >= 12 && value <= 72) {
       setMetadataFontSize(value);
-      PresentationTheme.metadata.fontSize = value;
+      saveMetadataFontSize(value);
       updateCSSVariables();
       await regenerateSlides();
     }

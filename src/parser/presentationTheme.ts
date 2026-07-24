@@ -41,7 +41,8 @@ export interface PresentationTheme {
   };
 }
 
-export const PresentationTheme: PresentationTheme = {
+// Default theme values
+const defaultTheme: PresentationTheme = {
   canvas: {
     width: 1920,
     height: 1080
@@ -76,6 +77,60 @@ export const PresentationTheme: PresentationTheme = {
     quote: "'Crimson Text', serif"
   }
 };
+
+// Load user preferences from localStorage if available
+function loadUserPreferences(): Partial<PresentationTheme> {
+  if (typeof window === 'undefined') return {};
+  
+  try {
+    const savedQuoteFontSize = localStorage.getItem('quoteFontSize');
+    const savedMetadataFontSize = localStorage.getItem('metadataFontSize');
+    
+    const preferences: Partial<PresentationTheme> = {};
+    
+    if (savedQuoteFontSize) {
+      preferences.quote = { ...defaultTheme.quote, fontSize: parseInt(savedQuoteFontSize, 10) };
+    }
+    
+    if (savedMetadataFontSize) {
+      preferences.metadata = { ...defaultTheme.metadata, fontSize: parseInt(savedMetadataFontSize, 10) };
+    }
+    
+    return preferences;
+  } catch (e) {
+    console.error('Failed to load user preferences:', e);
+    return {};
+  }
+}
+
+// Merge defaults with user preferences
+export const PresentationTheme: PresentationTheme = {
+  ...defaultTheme,
+  ...loadUserPreferences(),
+  quote: {
+    ...defaultTheme.quote,
+    ...(loadUserPreferences().quote || {})
+  },
+  metadata: {
+    ...defaultTheme.metadata,
+    ...(loadUserPreferences().metadata || {})
+  }
+};
+
+// Save user preference
+export function saveQuoteFontSize(size: number): void {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('quoteFontSize', size.toString());
+    PresentationTheme.quote.fontSize = size;
+  }
+}
+
+export function saveMetadataFontSize(size: number): void {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('metadataFontSize', size.toString());
+    PresentationTheme.metadata.fontSize = size;
+  }
+}
 
 /**
  * Derived layout calculations based on theme
