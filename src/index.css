@@ -1053,9 +1053,9 @@ body {
 }
 
 .overlay-metadata-bar {
-  height: 56px;
-  padding: 10px 45px;
-  border-bottom: 2px solid rgba(255,255,255,0.7);
+  height: var(--metadata-height, 56px);
+  padding: var(--metadata-padding-top, 10px) var(--metadata-padding-right, 45px) var(--metadata-padding-bottom, 10px) var(--metadata-padding-left, 45px);
+  border-bottom: var(--metadata-border-bottom-width, 2px) solid rgba(255,255,255,0.7);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1063,7 +1063,9 @@ body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  font-size: 22px;
+  font-size: var(--metadata-font-size, 24px);
+  font-family: var(--metadata-font-family, 'Inter', sans-serif);
+  line-height: var(--metadata-line-height, 1.2);
 }
 
 .overlay-year {
@@ -1089,16 +1091,16 @@ body {
 
 .overlay-quote-container {
   flex: 1;
-  padding: 10px 60px;
+  padding: var(--quote-padding-top, 10px) var(--quote-padding-right, 60px) var(--quote-padding-bottom, 10px) var(--quote-padding-left, 60px);
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
 .overlay-quote-text {
-  font-family: 'Crimson Text', serif;
-  font-size: 36px;
-  line-height: 1.5;
+  font-family: var(--quote-font-family, 'Crimson Text', serif);
+  font-size: var(--quote-font-size, 36px);
+  line-height: var(--quote-line-height, 1.5);
   color: #ffffff;
   text-align: justify;
   text-shadow: 0 2px 4px rgba(0,0,0,0.8);

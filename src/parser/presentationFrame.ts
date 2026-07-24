@@ -1,52 +1,39 @@
-// 16:9 Virtual Canvas Base Dimensions
-const canvasWidth = 1920;
-const canvasHeight = 1080;
-const aspectRatio = "16:9";
+import { PresentationTheme, calculateLayoutDimensions } from './presentationTheme';
 
-// Overlay height: 30% of canvas height
-const overlayHeight = canvasHeight * 0.30; // 324px
+/**
+ * PresentationFrame - Legacy compatibility layer
+ * 
+ * This file now derives all values from PresentationTheme to maintain backward compatibility
+ * while transitioning to the new layout-driven architecture.
+ */
 
-// Metadata Configuration
-const metadataFontSize = 24;
-const metadataPadding = { top: 10, right: 45, bottom: 10, left: 45 };
-const metadataHeight = metadataFontSize + metadataPadding.top + metadataPadding.bottom + 12; // 56px
+const theme = PresentationTheme;
+const dimensions = calculateLayoutDimensions(theme);
 
-// Gap between Metadata and Quote Area
-const gap = 10;
-
-// Quote Configuration
-const quotePadding = { top: 10, right: 60, bottom: 10, left: 60 };
-const quoteFontSize = 36;
-const quoteLineHeight = 1.5;
-const linePixelHeight = quoteFontSize * quoteLineHeight; // 54px
-const maxVisibleLines = 4;
-
-// Quote Box Dimensions (derived)
-const quoteBoxWidth = canvasWidth - (quotePadding.left + quotePadding.right); // 1800px
-const quoteBoxHeight = overlayHeight - metadataHeight - gap - quotePadding.top - quotePadding.bottom; // 238px
-
+// Legacy interface for backward compatibility
 export const PresentationFrame = {
-  canvasWidth,
-  canvasHeight,
-  aspectRatio,
+  canvasWidth: theme.canvas.width,
+  canvasHeight: theme.canvas.height,
+  aspectRatio: "16:9",
   overlay: {
-    height: overlayHeight
+    height: dimensions.overlayHeight
   },
   metadata: {
-    fontSize: metadataFontSize,
-    padding: metadataPadding,
-    height: metadataHeight
+    fontSize: theme.metadata.fontSize,
+    padding: theme.metadata.padding,
+    height: dimensions.metadataHeight,
+    lineHeight: theme.metadata.lineHeight
   },
-  gap,
+  gap: theme.gap,
   quote: {
-    fontSize: quoteFontSize,
-    lineHeight: quoteLineHeight,
-    padding: quotePadding,
-    linePixelHeight,
-    maxVisibleLines
+    fontSize: theme.quote.fontSize,
+    lineHeight: theme.quote.lineHeight,
+    padding: theme.quote.padding,
+    linePixelHeight: dimensions.quoteLineHeight,
+    maxVisibleLines: dimensions.maxVisibleLines // Now calculated dynamically
   },
   quoteBox: {
-    width: quoteBoxWidth,
-    height: quoteBoxHeight
+    width: dimensions.quoteBoxWidth,
+    height: dimensions.quoteBoxHeight
   }
 };

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Slide } from '../types';
+import { PresentationTheme, themeToCSSVariables } from '../parser/presentationTheme';
 
 export const PresentationPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -100,6 +101,22 @@ export const PresentationPage: React.FC = () => {
     document.body.className = 'overlay-body-transparent';
     return () => {
       document.body.className = '';
+    };
+  }, []);
+
+  // Apply CSS variables from theme
+  useEffect(() => {
+    const cssVariables = themeToCSSVariables(PresentationTheme);
+    const root = document.documentElement;
+    
+    Object.entries(cssVariables).forEach(([property, value]) => {
+      root.style.setProperty(property, value);
+    });
+    
+    return () => {
+      Object.keys(cssVariables).forEach(property => {
+        root.style.removeProperty(property);
+      });
     };
   }, []);
 
