@@ -56,6 +56,10 @@ export const PresentationPage: React.FC = () => {
         case 'clearDisplay':
           setIsActive(false);
           break;
+        case 'loadPresentation':
+          // Presentation data loaded, ready to receive slides
+          console.log('Presentation data loaded:', cmd.data);
+          break;
         default:
           break;
       }

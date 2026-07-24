@@ -62,7 +62,7 @@ export const PresentationTheme: PresentationTheme = {
   },
   gap: 10,
   quote: {
-    fontSize: 36,
+    fontSize: 42,
     lineHeight: 1.5,
     padding: {
       top: 10,

@@ -98,6 +98,7 @@ interface AppContextValue {
   openMessage: (index: number, paragraphNo?: number) => Promise<void>;
   selectReading: (pi: number, si: number) => void;
   toggleLive: (pi: number, si?: number) => void;
+  regenerateSlides: () => Promise<void>;
   addToSetlist: (pi: number) => void;
   removeFromSetlist: (idx: number) => void;
   setReaderQuery: (q: string) => void;
@@ -154,6 +155,33 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       if (pi >= 0) {
         dispatch({ type: 'SET_READING', payload: { paragraphIndex: pi, slideIndex: 0 } });
       }
+    }
+  }, []);
+
+  // Regenerate current message slides with new theme settings
+  const regenerateSlides = useCallback(async () => {
+    const current = stateRef.current;
+    if (current.currentMessageIndex === -1 || !current.presentationData) return;
+
+    const msg = current.messages[current.currentMessageIndex];
+    if (!msg) return;
+
+    const result = await getParagraphs(msg.id);
+    const parsed = parseSermonToSlides({
+      messageNumber: result.message.date,
+      title: result.message.title,
+      date: result.message.date,
+      paragraphs: result.paragraphs,
+    });
+
+    // Preserve current reading position if possible
+    const currentReading = current.reading;
+    dispatch({ type: 'SET_MESSAGE', payload: { index: current.currentMessageIndex, paragraphs: parsed.paragraphs, data: parsed } });
+    sendToPresentation('loadPresentation', parsed);
+
+    // Try to restore reading position
+    if (currentReading.paragraphIndex < parsed.paragraphs.length) {
+      dispatch({ type: 'SET_READING', payload: currentReading });
     }
   }, []);
 
@@ -248,6 +276,7 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       openMessage,
       selectReading,
       toggleLive,
+      regenerateSlides,
       addToSetlist,
       removeFromSetlist,
       setReaderQuery,
