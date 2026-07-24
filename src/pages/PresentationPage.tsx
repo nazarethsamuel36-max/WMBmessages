@@ -117,10 +117,41 @@ export const PresentationPage: React.FC = () => {
       root.style.setProperty(property, value);
     });
     
+    console.log('[PresentationPage] Applied CSS variables:', cssVariables);
+    
     return () => {
       Object.keys(cssVariables).forEach(property => {
         root.style.removeProperty(property);
       });
+    };
+  }, []);
+
+  // Listen for theme changes from settings via BroadcastChannel
+  useEffect(() => {
+    const handleThemeChange = (event: MessageEvent) => {
+      console.log('[PresentationPage] Received broadcast message:', event.data);
+      if (event.data.action === 'themeChange') {
+        console.log('[PresentationPage] Theme change detected, updating CSS variables');
+        console.log('[PresentationPage] Current PresentationTheme.quote.fontSize:', PresentationTheme.quote.fontSize);
+        const cssVariables = themeToCSSVariables(PresentationTheme);
+        const root = document.documentElement;
+        
+        Object.entries(cssVariables).forEach(([property, value]) => {
+          root.style.setProperty(property, value);
+          console.log('[PresentationPage] Set CSS variable:', property, '=', value);
+        });
+        console.log('[PresentationPage] Updated CSS variables:', cssVariables);
+        
+        // Force a reflow to ensure CSS variables take effect
+        void document.body.offsetHeight;
+      }
+    };
+
+    const presentationChannel = new BroadcastChannel('presentation_channel');
+    presentationChannel.onmessage = handleThemeChange;
+    
+    return () => {
+      presentationChannel.close();
     };
   }, []);
 

@@ -160,19 +160,26 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   // Regenerate current message slides with new theme settings
   const regenerateSlides = useCallback(async () => {
+    console.log('[AppContext] regenerateSlides called');
     const current = stateRef.current;
-    if (current.currentMessageIndex === -1 || !current.presentationData) return;
+    if (current.currentMessageIndex === -1 || !current.presentationData) {
+      console.log('[AppContext] No message loaded, skipping regeneration');
+      return;
+    }
 
     const msg = current.messages[current.currentMessageIndex];
     if (!msg) return;
 
+    console.log('[AppContext] Re-fetching paragraphs for message:', msg.id);
     const result = await getParagraphs(msg.id);
+    console.log('[AppContext] Calling parseSermonToSlides with current theme');
     const parsed = parseSermonToSlides({
       messageNumber: result.message.date,
       title: result.message.title,
       date: result.message.date,
       paragraphs: result.paragraphs,
     });
+    console.log('[AppContext] Generated', parsed.paragraphs.length, 'paragraphs with slides');
 
     // Preserve current reading position if possible
     const currentReading = current.reading;
@@ -183,6 +190,7 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     if (currentReading.paragraphIndex < parsed.paragraphs.length) {
       dispatch({ type: 'SET_READING', payload: currentReading });
     }
+    console.log('[AppContext] regenerateSlides completed');
   }, []);
 
   const selectReading = useCallback((pi: number, si: number) => {

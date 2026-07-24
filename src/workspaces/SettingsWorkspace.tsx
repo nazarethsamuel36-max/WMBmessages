@@ -9,22 +9,40 @@ export const SettingsWorkspace: React.FC = () => {
 
   const handleQuoteFontSizeChange = async (value: number) => {
     if (value >= 12 && value <= 120) {
+      console.log('[Settings] User changed quote font size to:', value);
       setQuoteFontSize(value);
       // Save to localStorage and update theme
       saveQuoteFontSize(value);
+      console.log('[Settings] Saved to localStorage, PresentationTheme.quote.fontSize now:', PresentationTheme.quote.fontSize);
       // Trigger re-render of presentation by updating CSS variables
       updateCSSVariables();
+      // Notify presentation page to update CSS variables via BroadcastChannel
+      const presentationChannel = new BroadcastChannel('presentation_channel');
+      presentationChannel.postMessage({ action: 'themeChange' });
+      console.log('[Settings] Dispatched themeChange via BroadcastChannel');
+      presentationChannel.close();
       // Regenerate slides with new font size
+      console.log('[Settings] Calling regenerateSlides...');
       await regenerateSlides();
+      console.log('[Settings] regenerateSlides completed');
     }
   };
 
   const handleMetadataFontSizeChange = async (value: number) => {
     if (value >= 12 && value <= 72) {
+      console.log('[Settings] User changed metadata font size to:', value);
       setMetadataFontSize(value);
       saveMetadataFontSize(value);
+      console.log('[Settings] Saved to localStorage, PresentationTheme.metadata.fontSize now:', PresentationTheme.metadata.fontSize);
       updateCSSVariables();
+      // Notify presentation page to update CSS variables via BroadcastChannel
+      const presentationChannel = new BroadcastChannel('presentation_channel');
+      presentationChannel.postMessage({ action: 'themeChange' });
+      console.log('[Settings] Dispatched themeChange via BroadcastChannel');
+      presentationChannel.close();
+      console.log('[Settings] Calling regenerateSlides...');
       await regenerateSlides();
+      console.log('[Settings] regenerateSlides completed');
     }
   };
 
