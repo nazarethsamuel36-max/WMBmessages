@@ -81,15 +81,8 @@ export function calculateLinesThatFit(
 }
 
 /**
- * Check if a line ends with a sentence terminator
- */
-function isEndOfSentence(line: string): boolean {
-  return /[.!?]\s*$/.test(line.trim());
-}
-
-/**
- * Height-driven slide generation with sentence awareness
- * Ensures sentences don't get split across slides
+ * Height-driven slide generation
+ * Simply fills available height without sentence awareness
  */
 export function generateSlidesByHeight(
   wrappedLines: string[],
@@ -112,38 +105,11 @@ export function generateSlidesByHeight(
       // At least one line should fit if we have content
       slides.push([wrappedLines[currentIndex]]);
       currentIndex++;
-      continue;
+    } else {
+      const slideLines = wrappedLines.slice(currentIndex, currentIndex + maxLines);
+      slides.push(slideLines);
+      currentIndex += maxLines;
     }
-    
-    // Start with max lines that fit
-    let linesForThisSlide = maxLines;
-    
-    // Check if the last line in the max-lines slide is a complete sentence
-    const lastLineIndex = currentIndex + maxLines - 1;
-    const lastLine = wrappedLines[lastLineIndex];
-    
-    // If the last line does NOT end with a sentence terminator, we might be splitting a sentence
-    // Try to include more lines to complete the sentence
-    if (!isEndOfSentence(lastLine) && lastLineIndex < wrappedLines.length - 1) {
-      // Look ahead up to 3 extra lines to find a sentence end
-      let extraLines = 0;
-      for (let i = 1; i <= 3 && (lastLineIndex + i) < wrappedLines.length; i++) {
-        const nextLine = wrappedLines[lastLineIndex + i];
-        if (isEndOfSentence(nextLine)) {
-          extraLines = i;
-          break;
-        }
-      }
-      
-      // Only add extra lines if we found a sentence end
-      if (extraLines > 0) {
-        linesForThisSlide = maxLines + extraLines;
-      }
-    }
-    
-    const slideLines = wrappedLines.slice(currentIndex, currentIndex + linesForThisSlide);
-    slides.push(slideLines);
-    currentIndex += linesForThisSlide;
   }
   
   return slides;
