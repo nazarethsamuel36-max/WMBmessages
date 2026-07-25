@@ -37,6 +37,9 @@ export function wrapText(
 ): string[] {
   if (!text) return [];
 
+  console.log('[wrapText] Original text:', text);
+  console.log('[wrapText] Original text length:', text.length);
+
   const words = text.split(/\s+/);
   const lines: string[] = [];
   let currentLine = '';
@@ -55,7 +58,7 @@ export function wrapText(
     } else {
       if (currentLine) {
         lines.push(currentLine);
-        console.log('[wrapText] Line added:', currentLine, 'Width:', measureTextWidth(currentLine, fontSize, fontFamily));
+        console.log('[wrapText] Line added:', currentLine, 'Width:', measureTextWidth(currentLine, fontSize, fontFamily), 'Utilization:', (measureTextWidth(currentLine, fontSize, fontFamily) / maxLineWidth * 100).toFixed(1) + '%');
       }
       currentLine = word;
     }
@@ -63,10 +66,48 @@ export function wrapText(
 
   if (currentLine) {
     lines.push(currentLine);
-    console.log('[wrapText] Final line added:', currentLine, 'Width:', measureTextWidth(currentLine, fontSize, fontFamily));
+    console.log('[wrapText] Final line added:', currentLine, 'Width:', measureTextWidth(currentLine, fontSize, fontFamily), 'Utilization:', (measureTextWidth(currentLine, fontSize, fontFamily) / maxLineWidth * 100).toFixed(1) + '%');
   }
 
-  console.log('[wrapText] Total lines:', lines.length);
+  console.log('[wrapText] Total lines before optimization:', lines.length);
+
+  // Optimize line breaks to better utilize available width
+  // Try to move words from underutilized lines to lines with capacity
+  if (lines.length > 1) {
+    for (let i = lines.length - 1; i > 0; i--) {
+      const currentLineWidth = measureTextWidth(lines[i], fontSize, fontFamily);
+      const currentUtilization = currentLineWidth / maxLineWidth;
+      
+      // If current line is underutilized (< 85%), try to move words from previous line
+      if (currentUtilization < 0.85 && i > 0) {
+        const prevLineWords = lines[i - 1].split(/\s+/);
+        
+        // Try moving words from previous line to current line
+        for (let j = prevLineWords.length - 1; j >= 0; j--) {
+          const wordToMove = prevLineWords[j];
+          const testLine = wordToMove + ' ' + lines[i];
+          const testLineWidth = measureTextWidth(testLine, fontSize, fontFamily);
+          
+          if (testLineWidth <= maxLineWidth) {
+            // Move the word
+            lines[i] = testLine;
+            prevLineWords.splice(j, 1);
+            lines[i - 1] = prevLineWords.join(' ');
+            console.log('[wrapText] Moved word from line', i, 'to line', i + 1, ':', wordToMove);
+          } else {
+            break; // Stop if word doesn't fit
+          }
+        }
+      }
+    }
+  }
+
+  console.log('[wrapText] Total lines after optimization:', lines.length);
+  for (let i = 0; i < lines.length; i++) {
+    const lineWidth = measureTextWidth(lines[i], fontSize, fontFamily);
+    console.log('[wrapText] Optimized line', i + 1, ':', lines[i], 'Width:', lineWidth, 'Utilization:', (lineWidth / maxLineWidth * 100).toFixed(1) + '%');
+  }
+
   return lines;
 }
 
