@@ -4,6 +4,7 @@ import { Header } from '../layout/Header';
 import { BottomNavigation } from '../layout/BottomNavigation';
 import { SearchWorkspace } from '../../workspaces/SearchWorkspace';
 import { ReaderWorkspace } from '../../workspaces/ReaderWorkspace';
+import { ReaderWithSidebarWorkspace } from '../../workspaces/ReaderWithSidebarWorkspace';
 import { SetlistWorkspace } from '../../workspaces/SetlistWorkspace';
 import { SettingsWorkspace } from '../../workspaces/SettingsWorkspace';
 import { normalizeText } from '../../utils/textNormalizer';
@@ -124,6 +125,9 @@ export const AppShell: React.FC = () => {
         </div>
         <div className="workspace" hidden={activeWorkspace !== 'reader'}>
           <ReaderWorkspace />
+        </div>
+        <div className="workspace" hidden={activeWorkspace !== 'reader-with-sidebar'}>
+          <ReaderWithSidebarWorkspace />
         </div>
         <div className="workspace" hidden={activeWorkspace !== 'setlist'}>
           <SetlistWorkspace />

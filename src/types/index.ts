@@ -1,4 +1,4 @@
-export type Workspace = 'search' | 'reader' | 'setlist' | 'settings';
+export type Workspace = 'search' | 'reader' | 'reader-with-sidebar' | 'setlist' | 'settings';
 
 export interface Message {
   id: number | string;

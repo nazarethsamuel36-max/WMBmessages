@@ -11,6 +11,7 @@ interface Tab {
 const TABS: Tab[] = [
   { id: 'search',   icon: '⌕',  label: 'Search'  },
   { id: 'reader',   icon: '📖', label: 'Reader'  },
+  { id: 'reader-with-sidebar', icon: '📖', label: 'Reader+' },
   { id: 'setlist',  icon: '📋', label: 'List' },
   { id: 'settings', icon: '⚙',  label: 'Settings'},
 ];
