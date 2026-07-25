@@ -44,6 +44,8 @@ export function wrapText(
   const maxLineWidth = frame.quoteBox.width;
   const fontSize = frame.quote.fontSize;
 
+  console.log('[wrapText] Max line width:', maxLineWidth, 'Font size:', fontSize);
+
   for (const word of words) {
     const testLine = currentLine ? `${currentLine} ${word}` : word;
     const lineWidth = measureTextWidth(testLine, fontSize, fontFamily);
@@ -53,6 +55,7 @@ export function wrapText(
     } else {
       if (currentLine) {
         lines.push(currentLine);
+        console.log('[wrapText] Line added:', currentLine, 'Width:', measureTextWidth(currentLine, fontSize, fontFamily));
       }
       currentLine = word;
     }
@@ -60,8 +63,10 @@ export function wrapText(
 
   if (currentLine) {
     lines.push(currentLine);
+    console.log('[wrapText] Final line added:', currentLine, 'Width:', measureTextWidth(currentLine, fontSize, fontFamily));
   }
 
+  console.log('[wrapText] Total lines:', lines.length);
   return lines;
 }
 
@@ -77,7 +82,9 @@ export function calculateLinesThatFit(
   if (wrappedLines.length === 0) return 0;
   
   const maxLines = Math.floor(availableHeight / linePixelHeight);
-  return Math.min(maxLines, wrappedLines.length);
+  const result = Math.min(maxLines, wrappedLines.length);
+  console.log('[calculateLinesThatFit] Available height:', availableHeight, 'Line pixel height:', linePixelHeight, 'Max lines:', maxLines, 'Result:', result);
+  return result;
 }
 
 /**
@@ -90,6 +97,8 @@ export function generateSlidesByHeight(
   linePixelHeight: number
 ): string[][] {
   if (wrappedLines.length === 0) return [];
+  
+  console.log('[generateSlidesByHeight] Total wrapped lines:', wrappedLines.length, 'Available height:', availableHeight, 'Line pixel height:', linePixelHeight);
   
   const slides: string[][] = [];
   let currentIndex = 0;
@@ -107,11 +116,13 @@ export function generateSlidesByHeight(
       currentIndex++;
     } else {
       const slideLines = wrappedLines.slice(currentIndex, currentIndex + maxLines);
+      console.log('[generateSlidesByHeight] Slide', slides.length + 1, 'with', slideLines.length, 'lines:', slideLines);
       slides.push(slideLines);
       currentIndex += maxLines;
     }
   }
   
+  console.log('[generateSlidesByHeight] Total slides generated:', slides.length);
   return slides;
 }
 
