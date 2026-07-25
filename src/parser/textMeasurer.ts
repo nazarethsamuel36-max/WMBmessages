@@ -81,8 +81,15 @@ export function calculateLinesThatFit(
 }
 
 /**
- * Height-driven slide generation
- * Instead of assuming a fixed number of lines, determine how many lines fit
+ * Check if a line ends with a sentence terminator
+ */
+function isEndOfSentence(line: string): boolean {
+  return /[.!?]\s*$/.test(line.trim());
+}
+
+/**
+ * Height-driven slide generation with sentence awareness
+ * Ensures sentences don't get split across slides
  */
 export function generateSlidesByHeight(
   wrappedLines: string[],
@@ -95,21 +102,47 @@ export function generateSlidesByHeight(
   let currentIndex = 0;
   
   while (currentIndex < wrappedLines.length) {
-    const linesThatFit = calculateLinesThatFit(
+    const maxLines = calculateLinesThatFit(
       wrappedLines.slice(currentIndex),
       availableHeight,
       linePixelHeight
     );
     
-    if (linesThatFit === 0) {
+    if (maxLines === 0) {
       // At least one line should fit if we have content
       slides.push([wrappedLines[currentIndex]]);
       currentIndex++;
-    } else {
-      const slideLines = wrappedLines.slice(currentIndex, currentIndex + linesThatFit);
-      slides.push(slideLines);
-      currentIndex += linesThatFit;
+      continue;
     }
+    
+    // Start with max lines that fit
+    let linesForThisSlide = maxLines;
+    
+    // Keep adding lines until we hit a sentence boundary or exceed max capacity
+    // Allow going slightly over max to complete a sentence
+    let foundSentenceEnd = false;
+    let checkIndex = currentIndex;
+    
+    while (checkIndex < wrappedLines.length && (checkIndex - currentIndex) < maxLines + 3) {
+      const currentLine = wrappedLines[checkIndex];
+      
+      if (isEndOfSentence(currentLine)) {
+        foundSentenceEnd = true;
+        linesForThisSlide = (checkIndex - currentIndex) + 1;
+        break;
+      }
+      
+      checkIndex++;
+    }
+    
+    // If we didn't find a sentence end within reasonable bounds, use max lines
+    if (!foundSentenceEnd) {
+      linesForThisSlide = Math.min(maxLines, wrappedLines.length - currentIndex);
+    }
+    
+    const slideLines = wrappedLines.slice(currentIndex, currentIndex + linesForThisSlide);
+    slides.push(slideLines);
+    currentIndex += linesForThisSlide;
   }
   
   return slides;
