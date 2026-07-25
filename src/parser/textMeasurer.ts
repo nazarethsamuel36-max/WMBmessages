@@ -118,26 +118,27 @@ export function generateSlidesByHeight(
     // Start with max lines that fit
     let linesForThisSlide = maxLines;
     
-    // Keep adding lines until we hit a sentence boundary or exceed max capacity
-    // Allow going slightly over max to complete a sentence
-    let foundSentenceEnd = false;
-    let checkIndex = currentIndex;
+    // Check if the last line in the max-lines slide is a complete sentence
+    const lastLineIndex = currentIndex + maxLines - 1;
+    const lastLine = wrappedLines[lastLineIndex];
     
-    while (checkIndex < wrappedLines.length && (checkIndex - currentIndex) < maxLines + 3) {
-      const currentLine = wrappedLines[checkIndex];
-      
-      if (isEndOfSentence(currentLine)) {
-        foundSentenceEnd = true;
-        linesForThisSlide = (checkIndex - currentIndex) + 1;
-        break;
+    // If the last line does NOT end with a sentence terminator, we might be splitting a sentence
+    // Try to include more lines to complete the sentence
+    if (!isEndOfSentence(lastLine) && lastLineIndex < wrappedLines.length - 1) {
+      // Look ahead up to 3 extra lines to find a sentence end
+      let extraLines = 0;
+      for (let i = 1; i <= 3 && (lastLineIndex + i) < wrappedLines.length; i++) {
+        const nextLine = wrappedLines[lastLineIndex + i];
+        if (isEndOfSentence(nextLine)) {
+          extraLines = i;
+          break;
+        }
       }
       
-      checkIndex++;
-    }
-    
-    // If we didn't find a sentence end within reasonable bounds, use max lines
-    if (!foundSentenceEnd) {
-      linesForThisSlide = Math.min(maxLines, wrappedLines.length - currentIndex);
+      // Only add extra lines if we found a sentence end
+      if (extraLines > 0) {
+        linesForThisSlide = maxLines + extraLines;
+      }
     }
     
     const slideLines = wrappedLines.slice(currentIndex, currentIndex + linesForThisSlide);
