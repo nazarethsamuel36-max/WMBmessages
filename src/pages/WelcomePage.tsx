@@ -5,8 +5,6 @@ export const WelcomePage: React.FC = () => {
   const [origin, setOrigin] = useState<string>(import.meta.env.VITE_APP_URL || 'https://wm-bmessages.vercel.app');
   const [copiedDock, setCopiedDock] = useState<boolean>(false);
   const [copiedOverlay, setCopiedOverlay] = useState<boolean>(false);
-  const [copiedOverlayPreview, setCopiedOverlayPreview] = useState<boolean>(false);
-  const [copiedOverlayBanner, setCopiedOverlayBanner] = useState<boolean>(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -23,8 +21,6 @@ export const WelcomePage: React.FC = () => {
 
   const dockUrl = `${origin}/dock`;
   const overlayUrl = `${origin}/presentation`;
-  const overlayPreviewUrl = `${origin}/presentation?preview=true`;
-  const overlayBannerUrl = `${origin}/presentation?banner=true`;
 
   return (
     <div className="welcome-body">
@@ -61,7 +57,7 @@ export const WelcomePage: React.FC = () => {
             <p>
               Open this display window on your presentation output monitor or load it directly as a transparent browser source in OBS.
             </p>
-            <div className="welcome-url-box" style={{ marginBottom: '10px' }}>
+            <div className="welcome-url-box">
               <span className="welcome-url-text">{overlayUrl}</span>
               <button
                 className="welcome-btn-secondary"
@@ -70,35 +66,9 @@ export const WelcomePage: React.FC = () => {
                 {copiedOverlay ? 'Copied!' : 'Copy'}
               </button>
             </div>
-            <div className="welcome-url-box">
-              <span className="welcome-url-text">{overlayPreviewUrl}</span>
-              <button
-                className="welcome-btn-secondary"
-                onClick={() => copyToClipboard(overlayPreviewUrl, setCopiedOverlayPreview)}
-              >
-                {copiedOverlayPreview ? 'Copied!' : 'Copy'}
-              </button>
-            </div>
-            <div className="welcome-url-box">
-              <span className="welcome-url-text">{overlayBannerUrl}</span>
-              <button
-                className="welcome-btn-secondary"
-                onClick={() => copyToClipboard(overlayBannerUrl, setCopiedOverlayBanner)}
-              >
-                {copiedOverlayBanner ? 'Copied!' : 'Copy'}
-              </button>
-            </div>
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-              <Link to="/presentation" className="welcome-btn">
-                Live (Transparent)
-              </Link>
-              <Link to="/presentation?preview=true" className="welcome-btn" style={{ background: '#4a5568', color: '#fff' }}>
-                Preview Mode
-              </Link>
-              <Link to="/presentation?banner=true" className="welcome-btn" style={{ background: '#2d3748', color: '#fff' }}>
-                Banner Mode
-              </Link>
-            </div>
+            <Link to="/presentation" className="welcome-btn">
+              Open Presentation
+            </Link>
           </div>
         </div>
 

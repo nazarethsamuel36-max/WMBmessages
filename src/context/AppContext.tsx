@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useReducer, useCallback, useEffect, useRef } from 'react';
 import { Workspace, Message, Paragraph, SermonData, SetlistEntry } from '../types';
 import { getMessages, getParagraphs } from '../services/messageService';
-import { parseSermonToSlides } from '../parser/sermonParser';
+import { parseSermonToSlides, createSlides } from '../parser/sermonParser';
 
 // ─── Broadcast Channel ───────────────────────────────────────────────────────
 const presentationChannel =
@@ -9,6 +9,10 @@ const presentationChannel =
 
 function sendToPresentation(action: string, data: unknown) {
   const cmd = { action, data };
+  console.log('sendToPresentation()');
+  console.log('Action:', action);
+  console.log('Payload:', data);
+  console.trace();
   presentationChannel?.postMessage(cmd);
   localStorage.setItem('presentationCommand', JSON.stringify(cmd));
 }
@@ -160,37 +164,27 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   // Regenerate current message slides with new theme settings
   const regenerateSlides = useCallback(async () => {
-    console.log('[AppContext] regenerateSlides called');
     const current = stateRef.current;
-    if (current.currentMessageIndex === -1 || !current.presentationData) {
-      console.log('[AppContext] No message loaded, skipping regeneration');
-      return;
-    }
+    if (current.currentMessageIndex === -1 || !current.presentationData) return;
 
     const msg = current.messages[current.currentMessageIndex];
     if (!msg) return;
 
-    console.log('[AppContext] Re-fetching paragraphs for message:', msg.id);
     const result = await getParagraphs(msg.id);
-    console.log('[AppContext] Calling parseSermonToSlides with current theme');
     const parsed = parseSermonToSlides({
       messageNumber: result.message.date,
       title: result.message.title,
       date: result.message.date,
       paragraphs: result.paragraphs,
     });
-    console.log('[AppContext] Generated', parsed.paragraphs.length, 'paragraphs with slides');
 
-    // Preserve current reading position if possible
     const currentReading = current.reading;
     dispatch({ type: 'SET_MESSAGE', payload: { index: current.currentMessageIndex, paragraphs: parsed.paragraphs, data: parsed } });
     sendToPresentation('loadPresentation', parsed);
 
-    // Try to restore reading position
     if (currentReading.paragraphIndex < parsed.paragraphs.length) {
       dispatch({ type: 'SET_READING', payload: currentReading });
     }
-    console.log('[AppContext] regenerateSlides completed');
   }, []);
 
   const selectReading = useCallback((pi: number, si: number) => {
@@ -217,23 +211,46 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       && current.live.slideIndex === si
       && current.live.messageIndex === current.currentMessageIndex;
 
+    console.log('========== toggleLive ==========');
+    console.log('Time:', new Date().toISOString());
+    console.log('Paragraph:', pi);
+    console.log('Slide:', si);
+    console.log('alreadyLive:', alreadyLive);
+    console.trace();
+
     // Always move reading pointer to this paragraph
     dispatch({ type: 'SET_READING', payload: { paragraphIndex: pi, slideIndex: si } });
 
+    console.log('Sending action:', alreadyLive ? 'clearDisplay' : 'showSlide');
+
     if (alreadyLive) {
-      // Toggle OFF
       dispatch({ type: 'CLEAR_LIVE' });
       sendToPresentation('clearDisplay', {});
     } else {
-      // Toggle ON → immediately send to presentation
       dispatch({
         type: 'SET_LIVE',
         payload: { messageIndex: current.currentMessageIndex, paragraphIndex: pi, slideIndex: si },
       });
       const activePara = current.paragraphs[pi];
-      const activeSlide = activePara?.slides?.[si];
+      let activeSlide = activePara?.slides?.[si];
+
+      // Guard: slides may be missing if the same message was reused without re-parsing
+      if (!activeSlide && activePara?.text) {
+        console.warn('[toggleLive] slides missing on paragraph', pi, '— re-parsing now');
+        const msg = current.messages[current.currentMessageIndex];
+        const meta = {
+          messageNumber: current.presentationData?.metadata?.messageNumber ?? '',
+          title: current.presentationData?.metadata?.title ?? '',
+          date: current.presentationData?.metadata?.date ?? '',
+        };
+        const reparsed = createSlides(activePara, null, meta);
+        activeSlide = reparsed[si] ?? reparsed[0];
+      }
+
       if (activeSlide) {
         sendToPresentation('showSlide', activeSlide);
+      } else {
+        console.error('[toggleLive] No slide available for pi=', pi, 'si=', si);
       }
     }
   }, []);

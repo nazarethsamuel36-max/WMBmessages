@@ -41,40 +41,40 @@ export interface PresentationTheme {
   };
 }
 
-// Default theme values
+// Default theme values matching Bible presentation spec exactly
 const defaultTheme: PresentationTheme = {
   canvas: {
     width: 1920,
     height: 1080
   },
   overlay: {
-    heightRatio: 0.30 // 30% of canvas height
+    heightRatio: 0.30 // 30% of canvas height (324px)
   },
   metadata: {
     fontSize: 24,
-    lineHeight: 1.2,
+    lineHeight: 1.0,
     padding: {
-      top: 10,
+      top: 0,
       right: 45,
-      bottom: 10,
+      bottom: 0,
       left: 45
     },
-    borderBottomWidth: 2
+    borderBottomWidth: 0
   },
-  gap: 10,
+  gap: 0,
   quote: {
-    fontSize: 42,
-    lineHeight: 1.5,
+    fontSize: 48,
+    lineHeight: 1.2,
     padding: {
-      top: 10,
+      top: 0,
       right: 60,
-      bottom: 10,
+      bottom: 0,
       left: 60
     }
   },
   fontFamily: {
     metadata: "'Inter', sans-serif",
-    quote: "'Crimson Text', serif"
+    quote: '"Times New Roman", serif'
   }
 };
 

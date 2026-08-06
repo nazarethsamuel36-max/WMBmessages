@@ -97,7 +97,7 @@ export const ReaderWorkspace: React.FC = () => {
                 key={idx}
                 id={`slide-card-${idx}`}
                 className={`para-card ${isReadingSlide ? 'is-reading' : ''} ${isLiveSlide ? 'is-live' : ''}`}
-                onClick={() => toggleLive(item.pi, item.si)}
+                onClick={() => { console.log('CARD CLICKED pi=' + item.pi + ' si=' + item.si); toggleLive(item.pi, item.si); }}
               >
                 {/* Paragraph/Slide Header */}
                 <div className="para-card-header">
