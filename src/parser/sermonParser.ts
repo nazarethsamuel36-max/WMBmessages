@@ -3,9 +3,9 @@ import { Paragraph, SermonData, Slide } from '../types';
 
 const BIBLE_FRAME_SPEC = {
   quoteWidth: 1800,
-  quoteHeight: 300,
+  quoteHeight: 294,
   fontFamily: '"Times New Roman", serif',
-  fontSize: 48,
+  fontSize: 52,
   lineHeight: 1.2
 };
 

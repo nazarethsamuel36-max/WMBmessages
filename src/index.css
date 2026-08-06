@@ -1055,7 +1055,7 @@ body {
 }
 
 .overlay-metadata-bar {
-  height: 24px;
+  height: 30px;
   padding: 0 45px;
   border-bottom: 2px solid rgba(255,255,255,0.7);
   display: flex;
@@ -1065,9 +1065,9 @@ body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  font-size: 16px;
-  font-family: 'Inter', sans-serif;
-  line-height: 1.2;
+  font-size: 28px;
+  font-family: 'Times New Roman', serif;
+  line-height: 1.0;
 }
 
 .overlay-year {
@@ -1092,7 +1092,7 @@ body {
 }
 
 .overlay-quote-container {
-  height: 300px;
+  height: 294px;
   padding: 0 60px;
   display: flex;
   flex-direction: column;
@@ -1100,7 +1100,7 @@ body {
 }
 
 .overlay-quote-text {
-  font-size: 48px;
+  font-size: 52px;
   line-height: 1.2;
   color: #ffffff;
   font-family: 'Times New Roman', serif;
