@@ -11,7 +11,7 @@ const BIBLE_FRAME_SPEC = {
 
 export function createSlides(
   paragraph: { text: string; paragraph: number },
-  spec: any,
+  _spec: any,
   metadata: { messageNumber: string; title: string; date: string }
 ): Slide[] {
   const label = String(paragraph.paragraph);
