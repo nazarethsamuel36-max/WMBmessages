@@ -237,7 +237,6 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       // Guard: slides may be missing if the same message was reused without re-parsing
       if (!activeSlide && activePara?.text) {
         console.warn('[toggleLive] slides missing on paragraph', pi, '— re-parsing now');
-        const _msg = current.messages[current.currentMessageIndex]; // eslint-disable-line @typescript-eslint/no-unused-vars
         const meta = {
           messageNumber: current.presentationData?.metadata?.messageNumber ?? '',
           title: current.presentationData?.metadata?.title ?? '',
