@@ -36,7 +36,7 @@
 }
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Arial', sans-serif;
   background: var(--bg-base);
   color: var(--text-primary);
   overflow: hidden;
@@ -184,7 +184,7 @@ body {
   height: 30px;
   padding: 0 10px;
   font-size: 12px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Arial', sans-serif;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -233,7 +233,7 @@ body {
 }
 
 .reader-search-result .rsr-text {
-  font-family: 'Crimson Text', serif;
+  font-family: 'Arial', sans-serif;
   font-size: 13px;
   color: var(--text-dim);
   line-height: 1.4;
@@ -257,7 +257,7 @@ body {
   flex-shrink: 0;
   display: flex;
   align-items: stretch;
-  height: 52px;
+  height: 36px;
   background: var(--bg-panel);
   border-top: 1px solid var(--border);
   z-index: 20;
@@ -269,12 +269,11 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
   border: none;
   background: none;
   cursor: pointer;
   transition: background 0.12s;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Arial', sans-serif;
   position: relative;
   padding: 0;
 }
@@ -304,8 +303,8 @@ body {
 }
 
 .nav-label {
-  font-size: 9px;
-  font-weight: 500;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--text-muted);
@@ -351,7 +350,7 @@ body {
   height: 36px;
   padding: 0 12px 0 34px;
   font-size: 13px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Arial', sans-serif;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -421,7 +420,7 @@ body {
 }
 
 .sri-snippet {
-  font-family: 'Crimson Text', serif;
+  font-family: 'Arial', sans-serif;
   font-size: 13px;
   color: var(--text-dim);
   font-style: italic;
@@ -561,7 +560,8 @@ body {
 }
 
 .para-card.is-reading {
-  border-color: var(--border-active);
+  border-color: rgba(255, 255, 255, 0.80);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.80), 0 0 18px rgba(255, 255, 255, 0.45);
 }
 
 .para-card.is-live {
@@ -593,7 +593,10 @@ body {
   transition: background 0.2s, box-shadow 0.2s;
 }
 
-.para-card.is-reading .para-state-dot { background: var(--border-active); }
+.para-card.is-reading .para-state-dot {
+  background: #ffffff;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.45);
+}
 .para-card.is-live .para-state-dot {
   background: var(--green);
   box-shadow: 0 0 5px var(--green);
@@ -638,7 +641,7 @@ body {
 /* ——— Responsive paragraph text ——— */
 .para-text {
   padding: 8px 12px 10px;
-  font-family: 'Crimson Text', serif;
+  font-family: 'Arial', sans-serif;
   font-size: 15px;
   line-height: 1.65;
   color: var(--text-dim);
@@ -648,6 +651,17 @@ body {
 }
 
 .para-card.is-live .para-text { color: #d4f7e4; }
+
+.para-text mark {
+  background: rgba(255,255,255,0.14);
+  color: var(--text-primary);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+.para-text mark::selection {
+  background: var(--green-dim);
+}
 
 /* ——— Slide breakdown (compact) ——— */
 .slides-container {
@@ -692,7 +706,7 @@ body {
 }
 
 .slide-row-text {
-  font-family: 'Crimson Text', serif;
+  font-family: 'Arial', sans-serif;
   font-size: 13px;
   line-height: 1.5;
   color: var(--text-muted);
@@ -766,7 +780,7 @@ body {
 .setlist-card-preview {
   font-size: 11px;
   color: var(--text-muted);
-  font-family: 'Crimson Text', serif;
+  font-family: 'Arial', sans-serif;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -844,7 +858,7 @@ body {
    WELCOME PAGE
 ==================================================== */
 .welcome-body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Arial', sans-serif;
   background: var(--bg-base);
   min-height: 100vh;
   display: flex;
@@ -1065,8 +1079,9 @@ body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  font-size: 28px;
-  font-family: 'Times New Roman', serif;
+  font-size: 26px;
+  font-family: 'Arial', sans-serif;
+  font-style: italic;
   line-height: 1.0;
 }
 
@@ -1103,10 +1118,40 @@ body {
   font-size: 52px;
   line-height: 1.2;
   color: #ffffff;
-  font-family: 'Times New Roman', serif;
+  font-family: 'Arial', sans-serif;
   white-space: normal;
   word-wrap: break-word;
   overflow-wrap: break-word;
   font-weight: normal;
   letter-spacing: normal;
+}
+
+/* ====================================================
+   TOAST NOTIFICATION
+==================================================== */
+.toast-notification {
+  position: fixed;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--green);
+  color: #000000;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: toast-fade-in 0.15s ease-out;
+}
+
+@keyframes toast-fade-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 }

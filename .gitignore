@@ -82,3 +82,6 @@ desktop.ini
 
 # Screenshots
 Screenshot*.png
+
+# Supabase scripts with service-role credentials
+backfill_normalized_text.js

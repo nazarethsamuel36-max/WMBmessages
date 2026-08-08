@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext';
 import { ReaderWorkspace } from './ReaderWorkspace';
 import { SearchWorkspace } from './SearchWorkspace';
 import { SplitPane } from '../components/layout/SplitPane';
-import { normalizeText } from '../utils/textNormalizer';
+import { normalizeText, buildSearchHighlightRegExp } from '../utils/textNormalizer';
 
 export const ReaderWithSidebarWorkspace: React.FC = () => {
   const { state, setReaderQuery } = useApp();
@@ -17,7 +17,7 @@ export const ReaderWithSidebarWorkspace: React.FC = () => {
     return paragraphs
       .map((p, idx) => ({ idx, para: p }))
       .filter(({ para }) => {
-        const searchText = para.normalized_text || normalizeText(para.text || '');
+        const searchText = normalizeText(para.normalized_text || para.text || '');
         return searchText.includes(q);
       });
   }, [readerQuery, paragraphs]);
@@ -132,15 +132,15 @@ export const ReaderWithSidebarWorkspace: React.FC = () => {
             marginTop: '4px'
           }}>
             {readerSearchResults.slice(0, 10).map(({ idx, para }) => {
-              const q = normalizeText(readerQuery.trim());
               const text = para.text || '';
-              const searchText = para.normalized_text || normalizeText(text);
-              const matchIdx = searchText.indexOf(q);
+              const regex = buildSearchHighlightRegExp(readerQuery);
+              const match = regex ? regex.exec(text) : null;
+              const matchIdx = match ? match.index : -1;
+              const matchLen = match ? match[0].length : 0;
               const snippet = matchIdx >= 0
-                ? text.slice(Math.max(0, matchIdx - 40), matchIdx + readerQuery.length + 60)
+                ? text.slice(Math.max(0, matchIdx - 40), matchIdx + matchLen + 60)
                 : text.slice(0, 100);
-              const escapedQuery = readerQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-              const parts = snippet.split(new RegExp(`(${escapedQuery})`, 'gi'));
+              const parts = regex ? snippet.split(regex) : [snippet];
               
               return (
                 <div
@@ -160,7 +160,7 @@ export const ReaderWithSidebarWorkspace: React.FC = () => {
                   </div>
                   <div style={{ color: '#6b7280' }}>
                     {parts.map((part, i) =>
-                      normalizeText(part) === q ? <mark key={i} style={{ backgroundColor: '#fef08a' }}>{part}</mark> : part
+                      i % 2 === 1 ? <mark key={i} style={{ backgroundColor: '#fef08a' }}>{part}</mark> : part
                     )}
                     …
                   </div>

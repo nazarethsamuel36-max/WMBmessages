@@ -73,8 +73,8 @@ const defaultTheme: PresentationTheme = {
     }
   },
   fontFamily: {
-    metadata: "'Inter', sans-serif",
-    quote: '"Times New Roman", serif'
+    metadata: "'Arial', sans-serif",
+    quote: "'Arial', sans-serif"
   }
 };
 

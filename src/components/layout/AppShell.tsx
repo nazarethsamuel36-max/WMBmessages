@@ -6,8 +6,7 @@ import { SearchWorkspace } from '../../workspaces/SearchWorkspace';
 import { ReaderWorkspace } from '../../workspaces/ReaderWorkspace';
 import { ReaderWithSidebarWorkspace } from '../../workspaces/ReaderWithSidebarWorkspace';
 import { SetlistWorkspace } from '../../workspaces/SetlistWorkspace';
-import { SettingsWorkspace } from '../../workspaces/SettingsWorkspace';
-import { normalizeText } from '../../utils/textNormalizer';
+import { normalizeText, buildSearchHighlightRegExp } from '../../utils/textNormalizer';
 
 export const AppShell: React.FC = () => {
   const { state, setReaderQuery, setSearchQuery, selectReading, toggleLive } = useApp();
@@ -24,8 +23,9 @@ export const AppShell: React.FC = () => {
     return paragraphs
       .map((p, idx) => ({ idx, para: p }))
       .filter(({ para }) => {
-        // Search against normalized_text if available, otherwise fall back to text
-        const searchText = para.normalized_text || normalizeText(para.text || '');
+        // Always normalize what we search against — don't trust pre-stored normalized_text
+        // as it may have been stored before the normalization rules were updated.
+        const searchText = normalizeText(para.normalized_text || para.text || '');
         return searchText.includes(q);
       });
   }, [readerQuery, paragraphs]);
@@ -132,9 +132,7 @@ export const AppShell: React.FC = () => {
         <div className="workspace" hidden={activeWorkspace !== 'setlist'}>
           <SetlistWorkspace />
         </div>
-        <div className="workspace" hidden={activeWorkspace !== 'settings'}>
-          <SettingsWorkspace />
-        </div>
+
       </div>
 
       {/* Global Search Bar — only shown when Search workspace is active */}
@@ -191,15 +189,15 @@ export const AppShell: React.FC = () => {
           {readerSearchActive && readerSearchResults.length > 0 && (
             <div className="reader-search-results">
               {readerSearchResults.slice(0, 20).map(({ idx, para }) => {
-                const q = normalizeText(readerQuery.trim());
                 const text = para.text || '';
-                const searchText = para.normalized_text || normalizeText(text);
-                const matchIdx = searchText.indexOf(q);
+                const regex = buildSearchHighlightRegExp(readerQuery);
+                const match = regex ? regex.exec(text) : null;
+                const matchIdx = match ? match.index : -1;
+                const matchLen = match ? match[0].length : 0;
                 const snippet = matchIdx >= 0
-                  ? text.slice(Math.max(0, matchIdx - 40), matchIdx + readerQuery.length + 60)
+                  ? text.slice(Math.max(0, matchIdx - 40), matchIdx + matchLen + 60)
                   : text.slice(0, 100);
-                const escapedQuery = readerQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                const parts = snippet.split(new RegExp(`(${escapedQuery})`, 'gi'));
+                const parts = regex ? snippet.split(regex) : [snippet];
 
                 return (
                   <div
@@ -211,7 +209,7 @@ export const AppShell: React.FC = () => {
                     <div className="rsr-text">
                       {matchIdx > 40 && '…'}
                       {parts.map((part, i) =>
-                        normalizeText(part) === q ? <mark key={i}>{part}</mark> : part
+                        i % 2 === 1 ? <mark key={i}>{part}</mark> : part
                       )}
                       …
                     </div>
@@ -224,6 +222,12 @@ export const AppShell: React.FC = () => {
       )}
 
       <BottomNavigation />
+
+      {state.toastMessage && (
+        <div className="toast-notification">
+          {state.toastMessage}
+        </div>
+      )}
     </div>
   );
 };

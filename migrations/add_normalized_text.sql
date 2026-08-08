@@ -5,5 +5,12 @@
 ALTER TABLE paragraphs 
 ADD COLUMN IF NOT EXISTS normalized_text TEXT;
 
--- Add index for search performance on normalized_text
-CREATE INDEX IF NOT EXISTS idx_paragraphs_normalized_text ON paragraphs(normalized_text);
+-- Trigram index for ILIKE '%...%' substring search on normalized_text.
+-- A plain btree index cannot be used for leading-wildcard ILIKE; without this
+-- index every search does a full table scan (213k+ rows) which exceeds the
+-- anon role's statement timeout (~3s) and returns error 57014.
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+DROP INDEX IF EXISTS idx_paragraphs_normalized_text;
+CREATE INDEX IF NOT EXISTS idx_paragraphs_normalized_text_trgm
+  ON paragraphs USING gin (normalized_text gin_trgm_ops);

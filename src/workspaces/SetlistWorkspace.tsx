@@ -17,7 +17,6 @@ export const SetlistWorkspace: React.FC = () => {
 
       {setlist.length === 0 ? (
         <div className="setlist-empty">
-          <div style={{ fontSize: '2rem', marginBottom: '8px', opacity: 0.3 }}>📋</div>
           No items in setlist.
           <br />
           Add paragraphs from the Reader using the + button.

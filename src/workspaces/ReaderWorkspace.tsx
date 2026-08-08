@@ -1,9 +1,21 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
+import { buildSearchHighlightRegExp } from '../utils/textNormalizer';
 
 export const ReaderWorkspace: React.FC = () => {
   const { state, selectReading, toggleLive, addToSetlist } = useApp();
-  const { paragraphs, reading, live, isLive, currentMessageIndex } = state;
+  const { paragraphs, reading, live, isLive, currentMessageIndex, searchQuery } = state;
+
+  const highlightRegex = useMemo(() => buildSearchHighlightRegExp(searchQuery), [searchQuery]);
+
+  // Split text into [plain, match, plain, ...] segments for <mark> highlighting
+  const renderHighlighted = (text: string): React.ReactNode => {
+    if (!text || !highlightRegex) return text;
+    const parts = text.split(highlightRegex);
+    return parts.map((part, i) =>
+      i % 2 === 1 ? <mark key={i}>{part}</mark> : part
+    );
+  };
 
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -120,7 +132,7 @@ export const ReaderWorkspace: React.FC = () => {
                 </div>
 
                 {/* RESPONSIVE text - slide lines formatted naturally */}
-                <div className="para-text" style={{ color: isLiveSlide ? 'var(--green)' : undefined }}>{item.text}</div>
+                <div className="para-text" style={{ color: isLiveSlide ? 'var(--green)' : undefined }}>{renderHighlighted(item.text)}</div>
               </div>
             );
           })

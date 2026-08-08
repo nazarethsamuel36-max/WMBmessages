@@ -61,24 +61,26 @@ export async function getParagraphs(msgId: number | string): Promise<{ message: 
 }
 
 export async function searchQuotes(query: string): Promise<any[]> {
-  // Normalize the query once before searching
+  // Normalize the query — same function used to populate normalized_text
   const normalizedQuery = normalizeText(query);
-  
-  // Try to search against normalized_text first (post-migration)
+
+  // Primary path: search normalized_text column (post-migration)
   const { data, error } = await supabase
     .from('paragraphs')
     .select('book_id, paragraph_no, text, messages(title, date)')
     .ilike('normalized_text', `%${normalizedQuery}%`)
-    .limit(15);
+    .limit(50);
 
-  // If normalized_text column doesn't exist (pre-migration), fall back to text
+  // Fallback: normalized_text column does not exist (pre-migration schema)
+  // Still use normalizedQuery — but search against text with ilike so
+  // punctuation-free queries can still partially match
   if (error && error.code === '42703') {
     const { data: fallbackData, error: fallbackError } = await supabase
       .from('paragraphs')
       .select('book_id, paragraph_no, text, messages(title, date)')
-      .filter('text', 'ilike', `%${query.toLowerCase()}%`)
-      .limit(15);
-    
+      .ilike('text', `%${normalizedQuery}%`)   // ← was: query.toLowerCase() against text
+      .limit(50);
+
     if (fallbackError) throw fallbackError;
     return fallbackData || [];
   }

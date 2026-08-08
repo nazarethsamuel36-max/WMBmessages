@@ -13,7 +13,6 @@ const TABS: Tab[] = [
   { id: 'reader',   icon: '📖', label: 'Reader'  },
   { id: 'reader-with-sidebar', icon: '📖', label: 'Reader+' },
   { id: 'setlist',  icon: '📋', label: 'List' },
-  { id: 'settings', icon: '⚙',  label: 'Settings'},
 ];
 
 export const BottomNavigation: React.FC = () => {
@@ -28,7 +27,6 @@ export const BottomNavigation: React.FC = () => {
           onClick={() => setWorkspace(tab.id)}
           aria-label={tab.label}
         >
-          <span className="nav-icon">{tab.icon}</span>
           <span className="nav-label">{tab.label}</span>
         </button>
       ))}

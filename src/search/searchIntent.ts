@@ -35,7 +35,7 @@ class ParagraphNavigationHandler {
     if (idx >= 0 && messages[currentMessageIndex]) {
       return [{
         type: 'paragraph',
-        badge: '📍 Paragraph',
+        badge: 'Paragraph',
         title: `Paragraph ${num}`,
         subtitle: messages[currentMessageIndex].title,
         messageIndex: currentMessageIndex,
@@ -60,7 +60,7 @@ class CombinedDateParagraphHandler {
     if (mIdx >= 0) {
       return [{
         type: 'paragraph',
-        badge: '📍 Paragraph',
+        badge: 'Paragraph',
         title: `Paragraph ${paraNum}`,
         subtitle: `${messages[mIdx].title} (${messages[mIdx].date})`,
         messageIndex: mIdx,
@@ -81,7 +81,7 @@ class DateSearchHandler {
       .filter(m => normalizeText(m.date).includes(q))
       .map(m => ({
         type: 'message',
-        badge: '📖 Message',
+        badge: 'Message',
         title: m.title,
         subtitle: m.date,
         messageIndex: messages.indexOf(m)
@@ -99,7 +99,7 @@ class TitleSearchHandler {
       .filter(m => normalizeText(m.title).includes(q))
       .map(m => ({
         type: 'message',
-        badge: '📖 Message',
+        badge: 'Message',
         title: m.title,
         subtitle: m.date,
         messageIndex: messages.indexOf(m)
@@ -120,7 +120,7 @@ class QuoteSearchHandler {
         if (mIdx >= 0) {
           results.push({
             type: 'quote',
-            badge: '💬 Quote',
+            badge: 'Quote',
             title: p.messages?.title || 'Sermon',
             subtitle: `${p.messages?.date || ''} · Paragraph ${p.paragraph_no}`,
             text: p.text,

@@ -2,6 +2,7 @@ import React, { createContext, useContext, useReducer, useCallback, useEffect, u
 import { Workspace, Message, Paragraph, SermonData, SetlistEntry } from '../types';
 import { getMessages, getParagraphs } from '../services/messageService';
 import { parseSermonToSlides, createSlides } from '../parser/sermonParser';
+import { findMatchSlideIndex } from '../utils/textNormalizer';
 
 // ─── Broadcast Channel ───────────────────────────────────────────────────────
 const presentationChannel =
@@ -30,6 +31,7 @@ export interface AppState {
   setlist: SetlistEntry[];
   readerQuery: string;
   searchQuery: string;
+  toastMessage: string | null;
 }
 
 const initialState: AppState = {
@@ -44,6 +46,7 @@ const initialState: AppState = {
   setlist: [],
   readerQuery: '',
   searchQuery: '',
+  toastMessage: null,
 };
 
 // ─── Actions ─────────────────────────────────────────────────────────────────
@@ -58,7 +61,8 @@ type Action =
   | { type: 'ADD_TO_SETLIST'; payload: SetlistEntry }
   | { type: 'REMOVE_FROM_SETLIST'; payload: number }
   | { type: 'SET_READER_QUERY'; payload: string }
-  | { type: 'SET_SEARCH_QUERY'; payload: string };
+  | { type: 'SET_SEARCH_QUERY'; payload: string }
+  | { type: 'SHOW_TOAST'; payload: string | null };
 
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
@@ -90,6 +94,8 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, readerQuery: action.payload };
     case 'SET_SEARCH_QUERY':
       return { ...state, searchQuery: action.payload };
+    case 'SHOW_TOAST':
+      return { ...state, toastMessage: action.payload };
     default:
       return state;
   }
@@ -99,7 +105,7 @@ function reducer(state: AppState, action: Action): AppState {
 interface AppContextValue {
   state: AppState;
   setWorkspace: (w: Workspace) => void;
-  openMessage: (index: number, paragraphNo?: number) => Promise<void>;
+  openMessage: (index: number, paragraphNo?: number, query?: string) => Promise<void>;
   selectReading: (pi: number, si: number) => void;
   toggleLive: (pi: number, si?: number) => void;
   regenerateSlides: () => Promise<void>;
@@ -107,7 +113,7 @@ interface AppContextValue {
   removeFromSetlist: (idx: number) => void;
   setReaderQuery: (q: string) => void;
   setSearchQuery: (q: string) => void;
-  handleSearchResult: (messageIndex: number, paragraphNo?: number) => void;
+  handleSearchResult: (messageIndex: number, paragraphNo?: number, query?: string) => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -132,7 +138,7 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       .catch(err => console.error('[AppContext] loadMessages failed:', err));
   }, []);
 
-  const openMessage = useCallback(async (index: number, paragraphNo?: number) => {
+  const openMessage = useCallback(async (index: number, paragraphNo?: number, query?: string) => {
     const current = stateRef.current;
     const msg = current.messages[index];
     if (!msg) return;
@@ -153,11 +159,14 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       sendToPresentation('loadPresentation', parsed);
     }
 
-    // Jump to a specific paragraph if requested
+    // Jump to a specific paragraph (and matching slide) if requested
     if (paragraphNo !== undefined && paras.length > 0) {
       const pi = paras.findIndex(p => String(p.paragraph) === String(paragraphNo));
       if (pi >= 0) {
-        dispatch({ type: 'SET_READING', payload: { paragraphIndex: pi, slideIndex: 0 } });
+        const slideIndex = query
+          ? findMatchSlideIndex(paras[pi].slides, query)
+          : 0;
+        dispatch({ type: 'SET_READING', payload: { paragraphIndex: pi, slideIndex } });
       }
     }
   }, []);
@@ -269,6 +278,10 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         paraNum: para.paragraph,
       },
     });
+    dispatch({ type: 'SHOW_TOAST', payload: 'Added to list' });
+    setTimeout(() => {
+      dispatch({ type: 'SHOW_TOAST', payload: null });
+    }, 2000);
   }, []);
 
   const removeFromSetlist = useCallback((idx: number) => {
@@ -288,8 +301,8 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   }, []);
 
   // Navigate from search result → open message → switch to reader
-  const handleSearchResult = useCallback(async (messageIndex: number, paragraphNo?: number) => {
-    await openMessage(messageIndex, paragraphNo);
+  const handleSearchResult = useCallback(async (messageIndex: number, paragraphNo?: number, query?: string) => {
+    await openMessage(messageIndex, paragraphNo, query);
     dispatch({ type: 'SET_WORKSPACE', payload: 'reader' });
   }, [openMessage]);
 

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useApp } from '../context/AppContext';
 import { searchRouter } from '../search/searchIntent';
+import { buildSearchHighlightRegExp } from '../utils/textNormalizer';
 import { SearchResult } from '../types';
 
 export const SearchWorkspace: React.FC = () => {
@@ -11,8 +12,10 @@ export const SearchWorkspace: React.FC = () => {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [searching, setSearching] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const latestSearchRef = useRef(0);
 
   const runSearch = useCallback(async (q: string) => {
+    const requestId = ++latestSearchRef.current;
     if (!q.trim()) {
       setResults([]);
       setSearching(false);
@@ -25,6 +28,7 @@ export const SearchWorkspace: React.FC = () => {
       paragraphs.length > 0 ? paragraphs : null,
       currentMessageIndex,
     );
+    if (requestId !== latestSearchRef.current) return;
     setResults(res);
     setSelectedIndex(-1);
     setSearching(false);
@@ -34,6 +38,7 @@ export const SearchWorkspace: React.FC = () => {
   useEffect(() => {
     clearTimeout(debounceRef.current);
     if (!searchQuery.trim()) {
+      latestSearchRef.current++;
       setResults([]);
       setSearching(false);
       return;
@@ -43,7 +48,7 @@ export const SearchWorkspace: React.FC = () => {
   }, [searchQuery, runSearch]);
 
   const selectResult = (res: SearchResult) => {
-    handleSearchResult(res.messageIndex, res.paragraphNo);
+    handleSearchResult(res.messageIndex, res.paragraphNo, searchQuery);
   };
 
   const badgeClass = (type: string) => {
@@ -57,8 +62,8 @@ export const SearchWorkspace: React.FC = () => {
       <div className="reader-content" style={{ width: '100%', flex: 1, overflowY: 'auto' }}>
         {searchQuery.trim().length === 0 ? (
           // If no search query, show the full list of messages in the middle (no sidebar)
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '4px' }}>
-            <div className="panel-label" style={{ border: 'none', paddingLeft: 0 }}>Sermon Messages</div>
+          <div style={{ display: 'flex', flexDirection: 'column', padding: '0px' }}>
+            <div className="panel-label" style={{ border: 'none', paddingLeft: '14px', paddingTop: '10px' }}>Sermon Messages</div>
             {messages.length === 0 ? (
               <div className="loading-msg">Loading messages…</div>
             ) : (
@@ -73,16 +78,16 @@ export const SearchWorkspace: React.FC = () => {
                     window.dispatchEvent(new CustomEvent('readerJumpTo', { detail: { paragraphIndex: 0 } }));
                   }}
                   style={{
-                    background: 'var(--bg-card)',
-                    border: '1px solid var(--border)',
-                    borderRadius: 'var(--radius)',
-                    padding: '12px 14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '10px 14px',
                     cursor: 'pointer',
+                    borderBottom: '1px solid var(--border)',
                     transition: 'all 0.15s'
                   }}
                 >
-                  <div className="msg-item-date" style={{ fontSize: '11px', color: 'var(--green)' }}>{msg.date}</div>
-                  <div className="msg-item-title" style={{ fontSize: '13px', color: 'var(--text-primary)', marginTop: '2px' }}>{msg.title}</div>
+                  <div className="msg-item-date" style={{ fontSize: '13px', color: 'var(--green)', marginRight: '24px', fontWeight: '600', flexShrink: 0, minWidth: '70px' }}>{msg.date}</div>
+                  <div className="msg-item-title" style={{ fontSize: '13px', color: 'var(--text-primary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{msg.title}</div>
                 </div>
               ))
             )}
@@ -98,21 +103,23 @@ export const SearchWorkspace: React.FC = () => {
 
             {results.map((res, i) => {
               const q = searchQuery.trim();
-              const escapedQ = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
               let snippet: React.ReactNode = null;
 
               if (res.type === 'quote' && res.text && q.length > 0) {
                 const text = res.text;
-                const matchIdx = text.toLowerCase().indexOf(q.toLowerCase());
+                const regex = buildSearchHighlightRegExp(q);
+                const match = regex ? regex.exec(text) : null;
+                const matchIdx = match ? match.index : -1;
+                const matchLen = match ? match[0].length : 0;
                 const raw = matchIdx >= 0
-                  ? text.slice(Math.max(0, matchIdx - 30), matchIdx + q.length + 80)
+                  ? text.slice(Math.max(0, matchIdx - 30), matchIdx + matchLen + 80)
                   : text.slice(0, 110);
-                const parts = raw.split(new RegExp(`(${escapedQ})`, 'gi'));
+                const parts = regex ? raw.split(regex) : [raw];
                 snippet = (
                   <div className="sri-snippet">
                     {matchIdx > 30 && '…'}
                     {parts.map((p, pi) =>
-                      p.toLowerCase() === q.toLowerCase() ? <mark key={pi}>{p}</mark> : p
+                      pi % 2 === 1 ? <mark key={pi}>{p}</mark> : p
                     )}
                     …
                   </div>
