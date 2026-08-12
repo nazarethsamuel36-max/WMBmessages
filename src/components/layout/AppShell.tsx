@@ -26,22 +26,32 @@ export const AppShell: React.FC = () => {
         // Always normalize what we search against — don't trust pre-stored normalized_text
         // as it may have been stored before the normalization rules were updated.
         const searchText = normalizeText(para.normalized_text || para.text || '');
-        return searchText.includes(q);
+        // Also match an exact paragraph number so typing "179" jumps straight to it
+        return searchText.includes(q) || String(para.paragraph) === q;
       });
   }, [readerQuery, paragraphs]);
 
   const handleReaderSearchSelect = (idx: number) => {
-    // Dispatch to app state so ReaderWorkspace scrolls to it
-    setReaderQuery(`¶${paragraphs[idx]?.paragraph}`); // signal special jump
-    setReaderSearchActive(false);
-    // Use a custom event to communicate to ReaderWorkspace
+    // Dispatch to app state so ReaderWorkspace scrolls to it, then reset the
+    // search state so a fresh paragraph search always works.
     window.dispatchEvent(new CustomEvent('readerJumpTo', { detail: { paragraphIndex: idx } }));
+    setReaderQuery('');
+    setReaderSearchActive(false);
+    readerInputRef.current?.blur();
   };
 
+  // Pure-digit query → treat as a paragraph number to jump to
+  const paraJumpIdx = useMemo(() => {
+    const q = normalizeText(readerQuery.trim());
+    if (!/^\d+$/.test(q)) return -1;
+    return paragraphs.findIndex(p => String(p.paragraph) === q);
+  }, [readerQuery, paragraphs]);
+
   const handleSearchInput = (val: string) => {
-    // Auto-hyphenate date queries e.g. 650402 → 65-0402
+    // Auto-hyphenate full date codes e.g. 650402 → 65-0402.
+    // Only exactly 6 digits so pure paragraph numbers like "179" are untouched.
     let v = val;
-    if (/^\d{3,}/.test(v) && !v.includes('-')) {
+    if (/^\d{6}$/.test(v) && !v.includes('-')) {
       v = v.slice(0, 2) + '-' + v.slice(2);
     }
     setSearchQuery(v);
@@ -105,6 +115,12 @@ export const AppShell: React.FC = () => {
             toggleLive(pi, si);
           }
           break;
+        case '/': // Focus the reader search bar
+          e.preventDefault();
+          readerInputRef.current?.focus();
+          readerInputRef.current?.select();
+          setReaderSearchActive(true);
+          break;
         default:
           break;
       }
@@ -162,18 +178,17 @@ export const AppShell: React.FC = () => {
             type="text"
             placeholder={
               paragraphs.length > 0
-                ? `Search in message or type ¶ number…`
+                ? `Search in message or enter paragraph number…`
                 : 'Open a message first…'
             }
-            value={readerQuery.startsWith('¶') ? '' : readerQuery}
+            value={readerQuery}
             onChange={e => {
               setReaderQuery(e.target.value);
-              setReaderSearchActive(e.target.value.trim().length >= 2);
+              const t = e.target.value.trim();
+              setReaderSearchActive(t.length >= 2 || /^\d+$/.test(t));
             }}
             onFocus={() => {
-              if (readerQuery && !readerQuery.startsWith('¶')) {
-                setReaderSearchActive(true);
-              }
+              if (readerQuery) setReaderSearchActive(true);
             }}
             onBlur={() => setTimeout(() => setReaderSearchActive(false), 150)}
             onKeyDown={e => {
@@ -182,13 +197,18 @@ export const AppShell: React.FC = () => {
                 setReaderSearchActive(false);
                 readerInputRef.current?.blur();
               }
+              if (e.key === 'Enter' && paraJumpIdx >= 0) {
+                e.preventDefault();
+                handleReaderSearchSelect(paraJumpIdx);
+              }
             }}
             disabled={paragraphs.length === 0}
           />
           {/* Results dropdown (floats upward) */}
-          {readerSearchActive && readerSearchResults.length > 0 && (
-            <div className="reader-search-results">
-              {readerSearchResults.slice(0, 20).map(({ idx, para }) => {
+          {readerSearchActive &&
+            (readerSearchResults.length > 0 || paraJumpIdx < 0) && (
+              <div className="reader-search-results">
+                {readerSearchResults.slice(0, 20).map(({ idx, para }) => {
                 const text = para.text || '';
                 const regex = buildSearchHighlightRegExp(readerQuery);
                 const match = regex ? regex.exec(text) : null;
@@ -205,7 +225,7 @@ export const AppShell: React.FC = () => {
                     className="reader-search-result"
                     onMouseDown={() => handleReaderSearchSelect(idx)}
                   >
-                    <div className="rsr-num">¶ {para.paragraph}</div>
+                    <div className="rsr-num">{para.paragraph}</div>
                     <div className="rsr-text">
                       {matchIdx > 40 && '…'}
                       {parts.map((part, i) =>
@@ -216,6 +236,13 @@ export const AppShell: React.FC = () => {
                   </div>
                 );
               })}
+              {/* Pure-number query that matches no paragraph → explain why */}
+              {/^\d+$/.test(normalizeText(readerQuery.trim())) && paraJumpIdx < 0 && (
+                <div className="reader-search-empty">
+                  No paragraph {readerQuery.trim()} in this message
+                  <span className="rsr-range"> ({paragraphs.length > 0 ? `1–${paragraphs.length}` : 'no message open'})</span>
+                </div>
+              )}
             </div>
           )}
         </div>

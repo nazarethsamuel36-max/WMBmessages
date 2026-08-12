@@ -1,7 +1,7 @@
 /* ====================================================
    FONTS
 ==================================================== */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Noto+Sans:wght@400;600;700&family=Noto+Serif:wght@400;600;700&display=swap');
 
 * {
   margin: 0;
@@ -248,6 +248,17 @@ body {
   color: var(--text-primary);
   border-radius: 2px;
   padding: 0 1px;
+}
+
+.reader-search-empty {
+  padding: 9px 12px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.reader-search-empty .rsr-range {
+  color: var(--text-muted);
+  font-size: 11px;
 }
 
 /* ====================================================
@@ -1076,12 +1087,10 @@ body {
   justify-content: space-between;
   align-items: center;
   color: #ffffff;
-  font-weight: 600;
-  text-transform: uppercase;
+  font-weight: normal;
   letter-spacing: 0.1em;
   font-size: 26px;
-  font-family: 'Arial', sans-serif;
-  font-style: italic;
+  font-family: 'Noto Sans', sans-serif;
   line-height: 1.0;
 }
 
@@ -1111,14 +1120,14 @@ body {
   padding: 0 60px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .overlay-quote-text {
   font-size: 52px;
   line-height: 1.2;
   color: #ffffff;
-  font-family: 'Arial', sans-serif;
+  font-family: 'Noto Serif', serif;
   white-space: normal;
   word-wrap: break-word;
   overflow-wrap: break-word;

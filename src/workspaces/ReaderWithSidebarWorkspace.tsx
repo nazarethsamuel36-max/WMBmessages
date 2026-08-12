@@ -18,15 +18,24 @@ export const ReaderWithSidebarWorkspace: React.FC = () => {
       .map((p, idx) => ({ idx, para: p }))
       .filter(({ para }) => {
         const searchText = normalizeText(para.normalized_text || para.text || '');
-        return searchText.includes(q);
+        // Match text OR an exact paragraph number (e.g. "54") — treat the
+        // number like plain text so typing it shows the slide as a result.
+        return searchText.includes(q) || String(para.paragraph) === q;
       });
   }, [readerQuery, paragraphs]);
 
+  // Pure-digit query → treat as a paragraph number to jump to
+  const paraJumpIdx = useMemo(() => {
+    const q = normalizeText(readerQuery.trim());
+    if (!/^\d+$/.test(q)) return -1;
+    return paragraphs.findIndex(p => String(p.paragraph) === q);
+  }, [readerQuery, paragraphs]);
+
   const handleReaderSearchSelect = useCallback((idx: number) => {
-    setReaderQuery(`¶${paragraphs[idx]?.paragraph}`);
-    setReaderSearchActive(false);
     window.dispatchEvent(new CustomEvent('readerJumpTo', { detail: { paragraphIndex: idx } }));
-  }, [paragraphs, setReaderQuery]);
+    setReaderQuery('');
+    setReaderSearchActive(false);
+  }, [setReaderQuery]);
 
   const toggleFullscreen = useCallback(() => {
     setIsFullscreen(!isFullscreen);
@@ -71,22 +80,25 @@ export const ReaderWithSidebarWorkspace: React.FC = () => {
       }}>
         <input
           type="text"
-          placeholder={paragraphs.length > 0 ? `Search in message or type ¶ number…` : 'Open a message first…'}
-          value={readerQuery.startsWith('¶') ? '' : readerQuery}
+          placeholder={paragraphs.length > 0 ? `Search in message or enter paragraph number…` : 'Open a message first…'}
+          value={readerQuery}
           onChange={(e) => {
             setReaderQuery(e.target.value);
-            setReaderSearchActive(e.target.value.trim().length >= 2);
+            const t = e.target.value.trim();
+            setReaderSearchActive(t.length >= 2 || /^\d+$/.test(t));
           }}
           onFocus={() => {
-            if (readerQuery && !readerQuery.startsWith('¶')) {
-              setReaderSearchActive(true);
-            }
+            if (readerQuery) setReaderSearchActive(true);
           }}
           onBlur={() => setTimeout(() => setReaderSearchActive(false), 150)}
           onKeyDown={(e) => {
             if (e.key === 'Escape') {
               setReaderQuery('');
               setReaderSearchActive(false);
+            }
+            if (e.key === 'Enter' && paraJumpIdx >= 0) {
+              e.preventDefault();
+              handleReaderSearchSelect(paraJumpIdx);
             }
           }}
           disabled={paragraphs.length === 0}
@@ -116,7 +128,7 @@ export const ReaderWithSidebarWorkspace: React.FC = () => {
         </button>
         
         {/* Reader Search Results */}
-        {readerSearchActive && readerSearchResults.length > 0 && (
+        {readerSearchActive && (readerSearchResults.length > 0 || paraJumpIdx < 0) && (
           <div style={{
             position: 'absolute',
             top: '100%',
@@ -145,7 +157,7 @@ export const ReaderWithSidebarWorkspace: React.FC = () => {
               return (
                 <div
                   key={idx}
-                  onClick={() => handleReaderSearchSelect(idx)}
+                  onMouseDown={() => handleReaderSearchSelect(idx)}
                   style={{
                     padding: '8px 12px',
                     cursor: 'pointer',
@@ -156,7 +168,7 @@ export const ReaderWithSidebarWorkspace: React.FC = () => {
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
                 >
                   <div style={{ fontWeight: 'bold', marginBottom: '4px', color: '#374151' }}>
-                    ¶{para.paragraph}
+                    {para.paragraph}
                   </div>
                   <div style={{ color: '#6b7280' }}>
                     {parts.map((part, i) =>
@@ -167,6 +179,14 @@ export const ReaderWithSidebarWorkspace: React.FC = () => {
                 </div>
               );
             })}
+            {/^\d+$/.test(normalizeText(readerQuery.trim())) && paraJumpIdx < 0 && (
+              <div style={{ padding: '8px 12px', fontSize: '12px', color: '#6b7280' }}>
+                No paragraph {readerQuery.trim()} in this message
+                <span style={{ color: '#9ca3af', fontSize: '11px' }}>
+                  {' '}({paragraphs.length > 0 ? `1–${paragraphs.length}` : 'no message open'})
+                </span>
+              </div>
+            )}
           </div>
         )}
       </div>

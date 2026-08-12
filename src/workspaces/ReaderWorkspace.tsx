@@ -66,7 +66,10 @@ export const ReaderWorkspace: React.FC = () => {
       if (idx >= 0) {
         const el = document.getElementById(`slide-card-${idx}`);
         if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          // Align to top of the reader so the selected slide is visible even in a small dock.
+          // scrollIntoView with block:'start' naturally caps at the container's scroll limit,
+          // so the last paragraph is not forced off-screen.
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       }
     }
