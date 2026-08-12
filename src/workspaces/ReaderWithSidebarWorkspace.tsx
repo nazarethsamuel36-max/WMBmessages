@@ -93,11 +93,13 @@ export const ReaderWithSidebarWorkspace: React.FC = () => {
           onBlur={() => setTimeout(() => setReaderSearchActive(false), 150)}
           onKeyDown={(e) => {
             if (e.key === 'Escape') {
+              e.stopPropagation();
               setReaderQuery('');
               setReaderSearchActive(false);
             }
             if (e.key === 'Enter' && paraJumpIdx >= 0) {
               e.preventDefault();
+              e.stopPropagation();
               handleReaderSearchSelect(paraJumpIdx);
             }
           }}

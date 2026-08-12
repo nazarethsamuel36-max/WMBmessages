@@ -51,7 +51,7 @@ const defaultTheme: PresentationTheme = {
     heightRatio: 0.30 // 30% of canvas height (324px)
   },
   metadata: {
-    fontSize: 24,
+    fontSize: 26,
     lineHeight: 1.0,
     padding: {
       top: 0,
@@ -63,8 +63,8 @@ const defaultTheme: PresentationTheme = {
   },
   gap: 0,
   quote: {
-    fontSize: 48,
-    lineHeight: 1.2,
+    fontSize: 50,
+    lineHeight: 1.3,
     padding: {
       top: 0,
       right: 60,

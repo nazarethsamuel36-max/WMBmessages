@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Slide } from '../types';
+import { renderTextToSlides } from '../parser/textRenderer';
+import { BIBLE_FRAME_SPEC } from '../parser/sermonParser';
 
 export const PresentationPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -74,7 +76,20 @@ export const PresentationPage: React.FC = () => {
   const metaDate = activeSlide?.metadata?.date || '';
   const metaTitle = activeSlide?.metadata?.title || '';
   const paraNumber = activeSlide?.metadata?.paragraph || '';
-  const overlayText = activeSlide?.lines?.join(' ') ?? '';
+
+  // Re-wrap legacy slides (stored as a single long line) through the balanced
+  // parser so the overlay always receives real per-line data for centering.
+  const overlayLines = useMemo(() => {
+    const raw = activeSlide?.lines?.length ? activeSlide.lines : [];
+    if (raw.length > 1) return raw;
+    const text = raw[0] ?? '';
+    if (!text) return [];
+    const clean = text.replace(/^["']|["']$/g, '');
+    const { slides } = renderTextToSlides(clean, '', BIBLE_FRAME_SPEC);
+    return slides[0]?.lines ?? [];
+  }, [activeSlide]);
+
+  const cleanLine = (l: string) => l.replace(/^["']|["']$/g, '');
 
   return (
     <div className={`presentation-canvas-container ${isBanner ? 'banner-mode' : ''}`}>
@@ -99,7 +114,11 @@ export const PresentationPage: React.FC = () => {
         </div>
         <div className="overlay-quote-container">
           <div className="overlay-quote-text">
-            {overlayText.replace(/^["']|["']$/g, '')}
+            {overlayLines.map((line, i) => (
+              <span key={i} className="overlay-quote-line">
+                {cleanLine(line)}
+              </span>
+            ))}
           </div>
         </div>
       </div>

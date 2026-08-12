@@ -1,12 +1,12 @@
 import { renderTextToSlides } from './textRenderer';
 import { Paragraph, SermonData, Slide } from '../types';
 
-const BIBLE_FRAME_SPEC = {
+export const BIBLE_FRAME_SPEC = {
   quoteWidth: 1800,
-  quoteHeight: 294,
+  quoteHeight: 270,
   fontFamily: "'Noto Serif', serif",
-  fontSize: 52,
-  lineHeight: 1.2
+  fontSize: 50,
+  lineHeight: 1.3
 };
 
 export function createSlides(
@@ -20,8 +20,8 @@ export function createSlides(
   return result.slides.map((slide) => ({
     slideNumber: slide.slideNumber,
     totalSlides: slide.totalSlides,
-    lines: [slide.text],
-    quoteLines: [slide.text],
+    lines: slide.lines,
+    quoteLines: slide.lines,
     metadata: {
       book: metadata.messageNumber,
       paragraph: paragraph.paragraph,
