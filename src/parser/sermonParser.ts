@@ -4,7 +4,7 @@ import { Paragraph, SermonData, Slide } from '../types';
 const BIBLE_FRAME_SPEC = {
   quoteWidth: 1800,
   quoteHeight: 294,
-  fontFamily: 'Arial, sans-serif',
+  fontFamily: "'Noto Serif', serif",
   fontSize: 52,
   lineHeight: 1.2
 };
