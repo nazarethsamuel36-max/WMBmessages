@@ -76,6 +76,7 @@ export const PresentationPage: React.FC = () => {
   const metaDate = activeSlide?.metadata?.date || '';
   const metaTitle = activeSlide?.metadata?.title || '';
   const paraNumber = activeSlide?.metadata?.paragraph || '';
+  const isCabBook = /^CAB-(0[1-9]|1[01])$/i.test(metaDate.trim());
 
   // Re-wrap legacy slides (stored as a single long line) through the balanced
   // parser so the overlay always receives real per-line data for centering.
@@ -108,9 +109,9 @@ export const PresentationPage: React.FC = () => {
       {/* Lower Third presentation block */}
       <div className={`lower-third ${isActive ? 'active' : ''}`}>
         <div className="overlay-metadata-bar">
-          <div className="overlay-year">{metaDate}</div>
-          <div className="overlay-title">{metaTitle}</div>
-          <div className="overlay-para">{paraNumber}</div>
+          {!isCabBook && <div className="overlay-year">{metaDate}</div>}
+          <div className={isCabBook ? 'overlay-title overlay-title-cab' : 'overlay-title'}>{metaTitle}</div>
+          {!isCabBook && <div className="overlay-para">{paraNumber}</div>}
         </div>
         <div className="overlay-quote-container">
           <div className="overlay-quote-text">
