@@ -1103,6 +1103,10 @@ body {
 .overlay-title {
   flex: 2;
   text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .overlay-para {
