@@ -19,7 +19,7 @@ export const SetlistWorkspace: React.FC = () => {
         <div className="setlist-empty">
           No items in setlist.
           <br />
-          Add paragraphs from the Reader using the + button.
+          Add paragraphs from the Reader.
         </div>
       ) : (
         <div className="setlist-list">

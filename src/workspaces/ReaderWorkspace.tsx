@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext';
 import { buildSearchHighlightRegExp } from '../utils/textNormalizer';
 
 export const ReaderWorkspace: React.FC = () => {
-  const { state, selectReading, toggleLive, addToSetlist } = useApp();
+  const { state, selectReading, toggleLive } = useApp();
   const { paragraphs, reading, live, isLive, currentMessageIndex, searchQuery } = state;
 
   const highlightRegex = useMemo(() => buildSearchHighlightRegExp(searchQuery), [searchQuery]);
@@ -119,18 +119,6 @@ export const ReaderWorkspace: React.FC = () => {
                   <div className="para-label">
                     <div className="para-state-dot" style={{ backgroundColor: isLiveSlide ? 'var(--green)' : undefined, boxShadow: isLiveSlide ? '0 0 5px var(--green)' : undefined }}></div>
                     <span className="para-num" style={{ color: isLiveSlide ? 'var(--green)' : undefined }}>{label}</span>
-                  </div>
-                  <div className="para-actions">
-                    <button
-                      className="btn-add-setlist"
-                      title="Add to List"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        addToSetlist(item.pi);
-                      }}
-                    >
-                      +
-                    </button>
                   </div>
                 </div>
 
