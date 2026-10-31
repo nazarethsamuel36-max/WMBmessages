@@ -86,10 +86,9 @@ function balanceLines(lines: string[], frame: PresentationFrame): string[] {
         const prevWithout = words.slice(0, -1).join(' ');
         const nextWith = `${words[words.length - 1]} ${lines[i + 1]}`.trim();
 
-        // Move the word only while the donor stays AT LEAST as wide as the
-        // recipient. This equalizes the lines instead of draining the first
-        // line, so the true remainder still lands on the last line.
-        if (width(prevWithout) <= width(nextWith)) break;
+        // Keep the balancing step inside the actual quote box width; otherwise a
+        // word may be moved onto a next line and leave a visually awkward orphan.
+        if (width(prevWithout) <= width(nextWith) || width(nextWith) > frame.quoteWidth) break;
 
         lines[i] = prevWithout;
         lines[i + 1] = nextWith;
@@ -111,21 +110,15 @@ export function renderTextToSlides(
     return estimateSplit(text, label, frame);
   }
 
-  const primaryFamily = frame.fontFamily.split(',')[0].replace(/['"]/g, '').trim();
-  const fontReady =
-    document.fonts &&
-    document.fonts.check(`${frame.fontSize}px "${primaryFamily}"`);
-
-  if (!fontReady) {
-    return estimateSplit(text, label, frame);
-  }
-
   const words = text.trim().split(/\s+/).filter(Boolean);
   if (words.length === 0) {
     return singleSlide(text, label);
   }
 
-  const el = createMeasurementElement(frame);
+  const el = createMeasurementElement({
+    ...frame,
+    quoteWidth: Math.max(1, frame.quoteWidth - 12),
+  });
   document.body.appendChild(el);
 
   const lineHeightPx = frame.fontSize * frame.lineHeight;
