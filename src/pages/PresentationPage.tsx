@@ -11,6 +11,19 @@ export const PresentationPage: React.FC = () => {
 
   const [activeSlide, setActiveSlide] = useState<Slide | null>(null);
   const [isActive, setIsActive] = useState<boolean>(false);
+  const [viewportSize, setViewportSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
+
+  useEffect(() => {
+    const updateViewportSize = () => {
+      setViewportSize({ width: window.innerWidth, height: window.innerHeight });
+    };
+
+    window.addEventListener('resize', updateViewportSize);
+    return () => window.removeEventListener('resize', updateViewportSize);
+  }, []);
 
   // BroadcastChannel and localStorage listeners for instant updates
   useEffect(() => {
@@ -94,6 +107,10 @@ export const PresentationPage: React.FC = () => {
 
   return (
     <div className={`presentation-canvas-container ${isBanner ? 'banner-mode' : ''}`}>
+      <div className="presentation-size-indicator" aria-label="Browser viewport size">
+        {viewportSize.width} × {viewportSize.height} CSS px
+      </div>
+
       {/* Background Image (Rendered only if ?preview=true parameter is set, otherwise transparent for OBS keying) */}
       {isPreview && (
         <>
