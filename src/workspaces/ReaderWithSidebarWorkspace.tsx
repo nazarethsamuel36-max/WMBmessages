@@ -6,7 +6,7 @@ import { SplitPane } from '../components/layout/SplitPane';
 import { normalizeText, buildSearchHighlightRegExp } from '../utils/textNormalizer';
 
 export const ReaderWithSidebarWorkspace: React.FC = () => {
-  const { state, setReaderQuery } = useApp();
+  const { state, setReaderQuery, selectReaderSearchResult } = useApp();
   const { paragraphs, readerQuery } = state;
   const [readerSearchActive, setReaderSearchActive] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -32,10 +32,11 @@ export const ReaderWithSidebarWorkspace: React.FC = () => {
   }, [readerQuery, paragraphs]);
 
   const handleReaderSearchSelect = useCallback((idx: number) => {
-    window.dispatchEvent(new CustomEvent('readerJumpTo', { detail: { paragraphIndex: idx } }));
+    const query = /^\d+$/.test(normalizeText(readerQuery.trim())) ? '' : readerQuery.trim();
+    selectReaderSearchResult(idx, query);
     setReaderQuery('');
     setReaderSearchActive(false);
-  }, [setReaderQuery]);
+  }, [readerQuery, selectReaderSearchResult, setReaderQuery]);
 
   const toggleFullscreen = useCallback(() => {
     setIsFullscreen(!isFullscreen);

@@ -26,11 +26,14 @@ export interface AppState {
   paragraphs: Paragraph[];
   presentationData: SermonData | null;
   reading: { paragraphIndex: number; slideIndex: number };
+  readingNavigationId: number;
   live: { messageIndex: number; paragraphIndex: number; slideIndex: number };
   isLive: boolean;
   setlist: SetlistEntry[];
   readerQuery: string;
   searchQuery: string;
+  readerHighlightQuery: string;
+  readerHighlightParagraphNo: number | null;
   toastMessage: string | null;
 }
 
@@ -41,11 +44,14 @@ const initialState: AppState = {
   paragraphs: [],
   presentationData: null,
   reading: { paragraphIndex: -1, slideIndex: 0 },
+  readingNavigationId: 0,
   live: { messageIndex: -1, paragraphIndex: -1, slideIndex: 0 },
   isLive: false,
   setlist: [],
   readerQuery: '',
   searchQuery: '',
+  readerHighlightQuery: '',
+  readerHighlightParagraphNo: null,
   toastMessage: null,
 };
 
@@ -62,6 +68,8 @@ type Action =
   | { type: 'REMOVE_FROM_SETLIST'; payload: number }
   | { type: 'SET_READER_QUERY'; payload: string }
   | { type: 'SET_SEARCH_QUERY'; payload: string }
+  | { type: 'SET_READER_HIGHLIGHT'; payload: { query: string; paragraphNo: number | null } }
+  | { type: 'SELECT_READER_SEARCH_RESULT'; payload: { paragraphIndex: number; slideIndex: number; query: string } }
   | { type: 'SHOW_TOAST'; payload: string | null };
 
 function reducer(state: AppState, action: Action): AppState {
@@ -79,7 +87,11 @@ function reducer(state: AppState, action: Action): AppState {
         reading: { paragraphIndex: 0, slideIndex: 0 },
       };
     case 'SET_READING':
-      return { ...state, reading: action.payload };
+      return {
+        ...state,
+        reading: action.payload,
+        readingNavigationId: state.readingNavigationId + 1,
+      };
     case 'SET_LIVE':
       return { ...state, live: action.payload, isLive: true };
     case 'SET_IS_LIVE':
@@ -94,6 +106,23 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, readerQuery: action.payload };
     case 'SET_SEARCH_QUERY':
       return { ...state, searchQuery: action.payload };
+    case 'SET_READER_HIGHLIGHT':
+      return {
+        ...state,
+        readerHighlightQuery: action.payload.query,
+        readerHighlightParagraphNo: action.payload.paragraphNo,
+      };
+    case 'SELECT_READER_SEARCH_RESULT':
+      return {
+        ...state,
+        reading: {
+          paragraphIndex: action.payload.paragraphIndex,
+          slideIndex: action.payload.slideIndex,
+        },
+        readingNavigationId: state.readingNavigationId + 1,
+        readerHighlightQuery: action.payload.query,
+        readerHighlightParagraphNo: state.paragraphs[action.payload.paragraphIndex]?.paragraph ?? null,
+      };
     case 'SHOW_TOAST':
       return { ...state, toastMessage: action.payload };
     default:
@@ -113,6 +142,7 @@ interface AppContextValue {
   removeFromSetlist: (idx: number) => void;
   setReaderQuery: (q: string) => void;
   setSearchQuery: (q: string) => void;
+  selectReaderSearchResult: (paragraphIndex: number, query: string) => void;
   handleSearchResult: (messageIndex: number, paragraphNo?: number, query?: string) => void;
 }
 
@@ -296,12 +326,32 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     dispatch({ type: 'SET_SEARCH_QUERY', payload: q });
   }, []);
 
+  const selectReaderSearchResult = useCallback((paragraphIndex: number, query: string) => {
+    const current = stateRef.current;
+    const paragraph = current.paragraphs[paragraphIndex];
+    if (!paragraph) return;
+
+    const normalizedQuery = query.trim();
+    const slideIndex = normalizedQuery
+      ? findMatchSlideIndex(paragraph.slides, normalizedQuery)
+      : 0;
+
+    dispatch({
+      type: 'SELECT_READER_SEARCH_RESULT',
+      payload: { paragraphIndex, slideIndex, query: normalizedQuery },
+    });
+  }, []);
+
   const setWorkspace = useCallback((w: Workspace) => {
     dispatch({ type: 'SET_WORKSPACE', payload: w });
   }, []);
 
   // Navigate from search result → open message → switch to reader
   const handleSearchResult = useCallback(async (messageIndex: number, paragraphNo?: number, query?: string) => {
+    dispatch({
+      type: 'SET_READER_HIGHLIGHT',
+      payload: { query: query?.trim() || '', paragraphNo: paragraphNo ?? null },
+    });
     await openMessage(messageIndex, paragraphNo, query);
     dispatch({ type: 'SET_WORKSPACE', payload: 'reader' });
   }, [openMessage]);
@@ -318,6 +368,7 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       removeFromSetlist,
       setReaderQuery,
       setSearchQuery,
+      selectReaderSearchResult,
       handleSearchResult,
     }}>
       {children}

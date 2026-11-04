@@ -13,6 +13,8 @@ export const SearchWorkspace: React.FC = () => {
   const [searching, setSearching] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const latestSearchRef = useRef(0);
+  const searchStateRef = useRef({ results, searching, selectedIndex, searchQuery });
+  searchStateRef.current = { results, searching, selectedIndex, searchQuery };
 
   const runSearch = useCallback(async (q: string) => {
     const requestId = ++latestSearchRef.current;
@@ -43,13 +45,42 @@ export const SearchWorkspace: React.FC = () => {
       setSearching(false);
       return;
     }
+    setSearching(true);
+    setSelectedIndex(-1);
     debounceRef.current = setTimeout(() => runSearch(searchQuery), 180);
     return () => clearTimeout(debounceRef.current);
   }, [searchQuery, runSearch]);
 
   const selectResult = (res: SearchResult) => {
-    handleSearchResult(res.messageIndex, res.paragraphNo, searchQuery);
+    handleSearchResult(res.messageIndex, res.paragraphNo, searchQuery.trim());
   };
+
+  useEffect(() => {
+    const handleResultNavigation = (event: KeyboardEvent) => {
+      if (document.activeElement?.id !== 'globalSearchInput') return;
+
+      const current = searchStateRef.current;
+      if (current.results.length === 0 || current.searching) return;
+
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        setSelectedIndex(index => Math.min(index + 1, current.results.length - 1));
+      } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        setSelectedIndex(index => index < 0 ? current.results.length - 1 : Math.max(index - 1, 0));
+      } else if (event.key === 'Enter') {
+        event.preventDefault();
+        const index = current.selectedIndex >= 0 ? current.selectedIndex : 0;
+        const result = current.results[index];
+        if (result) {
+          handleSearchResult(result.messageIndex, result.paragraphNo, current.searchQuery.trim());
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleResultNavigation);
+    return () => window.removeEventListener('keydown', handleResultNavigation);
+  }, [handleSearchResult]);
 
   const badgeClass = (type: string) => {
     if (type === 'message') return 'type-message';

@@ -677,9 +677,10 @@ body {
 .para-card.is-live .para-text { color: #d4f7e4; }
 
 .para-text mark {
-  background: rgba(255,255,255,0.14);
-  color: var(--text-primary);
+  background: #ffffff;
+  color: #111113;
   border-radius: 2px;
+  box-shadow: 0 0 0 2px #ffffff;
   padding: 0 1px;
 }
 

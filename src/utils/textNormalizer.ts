@@ -62,15 +62,35 @@ export function normalizeText(text: string): string {
 export function buildSearchHighlightRegExp(query: string): RegExp | null {
   const tokens = normalizeText(query).split(/\s+/).filter(Boolean);
   if (tokens.length === 0) return null;
+  return makeSearchHighlightRegExp(tokens);
+}
+
+function makeSearchHighlightRegExp(tokens: string[]): RegExp {
   const escaped = tokens.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
   return new RegExp(`(${escaped.join('[\\W]*?')})`, 'gi');
 }
 
+export function findBestSearchMatch(
+  text: string,
+  query: string,
+): { regex: RegExp; tokenCount: number } | null {
+  const tokens = normalizeText(query).split(/\s+/).filter(Boolean);
+
+  for (let length = tokens.length; length > 0; length--) {
+    for (let start = 0; start <= tokens.length - length; start++) {
+      const regex = makeSearchHighlightRegExp(tokens.slice(start, start + length));
+      regex.lastIndex = 0;
+      if (regex.test(text)) return { regex, tokenCount: length };
+    }
+  }
+
+  return null;
+}
+
 /**
- * Finds the index of the first slide whose text contains a match for the
- * given query. Slide lines are joined and tested against the same
- * normalized regex used for highlighting, so the match slide aligns with
- * the highlighted span. Returns 0 when no match or no query is provided.
+ * Finds the slide with the longest contiguous match of query tokens. This
+ * also handles a query that crosses a slide boundary by choosing the slide
+ * containing the largest matching portion. Returns 0 when nothing matches.
  */
 export function findMatchSlideIndex(
   slides: Array<{ lines?: string[]; text?: string }> | undefined,
@@ -78,13 +98,15 @@ export function findMatchSlideIndex(
 ): number {
   if (!slides || slides.length === 0 || !query.trim()) return 0;
 
-  const regex = buildSearchHighlightRegExp(query);
-  if (!regex) return 0;
-
-  const idx = slides.findIndex(slide => {
+  let bestIndex = 0;
+  let bestTokenCount = 0;
+  slides.forEach((slide, index) => {
     const text = slide.lines?.join('\n') ?? slide.text ?? '';
-    regex.lastIndex = 0;
-    return regex.test(text);
+    const match = findBestSearchMatch(text, query);
+    if (match && match.tokenCount > bestTokenCount) {
+      bestIndex = index;
+      bestTokenCount = match.tokenCount;
+    }
   });
-  return idx >= 0 ? idx : 0;
+  return bestIndex;
 }

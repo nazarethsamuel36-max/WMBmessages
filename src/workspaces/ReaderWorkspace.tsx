@@ -1,17 +1,17 @@
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
-import { buildSearchHighlightRegExp } from '../utils/textNormalizer';
+import { findBestSearchMatch, findMatchSlideIndex } from '../utils/textNormalizer';
 
 export const ReaderWorkspace: React.FC = () => {
   const { state, selectReading, toggleLive, addToSetlist } = useApp();
-  const { paragraphs, reading, live, isLive, currentMessageIndex, searchQuery } = state;
-
-  const highlightRegex = useMemo(() => buildSearchHighlightRegExp(searchQuery), [searchQuery]);
+  const { activeWorkspace, paragraphs, reading, readingNavigationId, live, isLive, currentMessageIndex, readerHighlightQuery, readerHighlightParagraphNo } = state;
 
   // Split text into [plain, match, plain, ...] segments for <mark> highlighting
   const renderHighlighted = (text: string): React.ReactNode => {
-    if (!text || !highlightRegex) return text;
-    const parts = text.split(highlightRegex);
+    if (!text || !readerHighlightQuery) return text;
+    const match = findBestSearchMatch(text, readerHighlightQuery);
+    if (!match) return text;
+    const parts = text.split(match.regex);
     return parts.map((part, i) =>
       i % 2 === 1 ? <mark key={i}>{part}</mark> : part
     );
@@ -57,23 +57,36 @@ export const ReaderWorkspace: React.FC = () => {
     return items;
   }, [paragraphs]);
 
+  const highlightParagraphIndex = readerHighlightParagraphNo === null
+    ? -1
+    : paragraphs.findIndex(paragraph => paragraph.paragraph === readerHighlightParagraphNo);
+  const highlightSlideIndex = highlightParagraphIndex >= 0
+    ? findMatchSlideIndex(paragraphs[highlightParagraphIndex].slides, readerHighlightQuery)
+    : -1;
+
   // Scroll reading pointer card into view
   useEffect(() => {
-    if (reading.paragraphIndex >= 0) {
-      const idx = displayItems.findIndex(
-        item => item.pi === reading.paragraphIndex && item.si === reading.slideIndex
-      );
-      if (idx >= 0) {
-        const el = document.getElementById(`slide-card-${idx}`);
-        if (el) {
-          // Align to top of the reader so the selected slide is visible even in a small dock.
-          // scrollIntoView with block:'start' naturally caps at the container's scroll limit,
-          // so the last paragraph is not forced off-screen.
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }
-    }
-  }, [reading.paragraphIndex, reading.slideIndex, displayItems]);
+    if (activeWorkspace !== 'reader') return;
+
+    if (reading.paragraphIndex < 0) return;
+
+    const idx = displayItems.findIndex(
+      item => item.pi === reading.paragraphIndex && item.si === reading.slideIndex
+    );
+    if (idx < 0) return;
+
+    const frame = window.requestAnimationFrame(() => {
+      const container = contentRef.current;
+      const el = document.getElementById(`slide-card-${idx}`);
+      if (!container || !el) return;
+
+      const containerTop = container.getBoundingClientRect().top;
+      const targetTop = el.getBoundingClientRect().top - containerTop + container.scrollTop;
+      container.scrollTo({ top: targetTop, behavior: 'smooth' });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeWorkspace, reading.paragraphIndex, reading.slideIndex, readingNavigationId, displayItems]);
 
   // Jump event listener for In-Reader search
   useEffect(() => {
@@ -135,7 +148,11 @@ export const ReaderWorkspace: React.FC = () => {
                 </div>
 
                 {/* RESPONSIVE text - slide lines formatted naturally */}
-                <div className="para-text" style={{ color: isLiveSlide ? 'var(--green)' : undefined }}>{renderHighlighted(item.text)}</div>
+                <div className="para-text" style={{ color: isLiveSlide ? 'var(--green)' : undefined }}>
+                  {item.pi === highlightParagraphIndex && item.si === highlightSlideIndex
+                    ? renderHighlighted(item.text)
+                    : item.text}
+                </div>
               </div>
             );
           })

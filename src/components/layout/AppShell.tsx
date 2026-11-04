@@ -8,7 +8,7 @@ import { SetlistWorkspace } from '../../workspaces/SetlistWorkspace';
 import { normalizeText, buildSearchHighlightRegExp } from '../../utils/textNormalizer';
 
 export const AppShell: React.FC = () => {
-  const { state, setReaderQuery, setSearchQuery, selectReading, toggleLive } = useApp();
+  const { state, setReaderQuery, setSearchQuery, selectReaderSearchResult, selectReading, toggleLive } = useApp();
   const { activeWorkspace, readerQuery, searchQuery, paragraphs, reading } = state;
 
   // ─── In-reader search ───────────────────────────────────────────────────
@@ -31,9 +31,8 @@ export const AppShell: React.FC = () => {
   }, [readerQuery, paragraphs]);
 
   const handleReaderSearchSelect = (idx: number) => {
-    // Dispatch to app state so ReaderWorkspace scrolls to it, then reset the
-    // search state so a fresh paragraph search always works.
-    window.dispatchEvent(new CustomEvent('readerJumpTo', { detail: { paragraphIndex: idx } }));
+    const query = /^\d+$/.test(normalizeText(readerQuery.trim())) ? '' : readerQuery.trim();
+    selectReaderSearchResult(idx, query);
     setReaderQuery('');
     setReaderSearchActive(false);
     readerInputRef.current?.blur();
@@ -127,7 +126,7 @@ export const AppShell: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeWorkspace, paragraphs, reading, selectReading, toggleLive, setReaderQuery]);
+  }, [activeWorkspace, paragraphs, reading, selectReading, toggleLive, setReaderQuery, readerQuery, readerSearchResults]);
 
   return (
     <div className="app-shell">
@@ -152,6 +151,7 @@ export const AppShell: React.FC = () => {
         <div className="reader-search-zone">
           <input
             ref={searchInputRef}
+            id="globalSearchInput"
             type="text"
             placeholder="Search by title, date (65-0410), paragraph, or quote…"
             value={searchQuery}
@@ -198,6 +198,10 @@ export const AppShell: React.FC = () => {
                 e.preventDefault();
                 e.stopPropagation();
                 handleReaderSearchSelect(paraJumpIdx);
+              } else if (e.key === 'Enter' && readerSearchResults.length > 0) {
+                e.preventDefault();
+                e.stopPropagation();
+                handleReaderSearchSelect(readerSearchResults[0].idx);
               }
             }}
             disabled={paragraphs.length === 0}
