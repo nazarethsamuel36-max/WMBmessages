@@ -1,0 +1,35 @@
+{
+  "messageNumber": "53-0405M",
+  "title": "Prayer",
+  "date": "53-0405M",
+  "type": "sermon",
+  "isBook": false,
+  "totalParagraphs": 5,
+  "paragraphs": [
+    {
+      "paragraph": 1,
+      "text": "clock of the resurrection. Shall we stand now while we...Let us bow our heads now for",
+      "normalized_text": "clock of the resurrection shall we stand now while welet us bow our heads now for"
+    },
+    {
+      "paragraph": 2,
+      "text": "Our Heavenly Father, we come to Thee, at this hour, early in the morning, as the disciples came to the tomb to find it empty, the great Conqueror had rose from the dead.",
+      "normalized_text": "our heavenly father we come to thee at this hour early in the morning as the disciples came to the tomb to find it empty the great conqueror had rose from the dead"
+    },
+    {
+      "paragraph": 3,
+      "text": "We gather here this morning for the purpose of worshipping Him, singing out the glad tidings around the world today, that Jesus arose from the dead. We thank Thee for His great life and for His great approval that You put upon Him that He was the Son of God. As He said in the days while He was alive, “Destroy this temple, and I’ll raise it up again in three days.” We thank Thee for this, that You gave Him power to fulfill what He said He would do.",
+      "normalized_text": "we gather here this morning for the purpose of worshipping him singing out the glad tidings around the world today that jesus arose from the dead we thank thee for his great life and for his great approval that you put upon him that he was the son of god as he said in the days while he was alive destroy this temple and ill raise it up again in three days we thank thee for this that you gave him power to fulfill what he said he would do"
+    },
+    {
+      "paragraph": 4,
+      "text": "As we gather here this morning, around in the little tabernacle to singourpraisesto Theefor Thygreatwork,manyofusvisitedthegrave this morning and finding, setting the flowers, thinking of our loved ones, and the time that when we placed their bodies beneath the sod, then by faith we look across the sea yonder to Joseph’s tomb, empty, Joseph of Arimathaea.",
+      "normalized_text": "as we gather here this morning around in the little tabernacle to singourpraisesto theefor thygreatworkmanyofusvisitedthegrave this morning and finding setting the flowers thinking of our loved ones and the time that when we placed their bodies beneath the sod then by faith we look across the sea yonder to josephs tomb empty joseph of arimathaea"
+    },
+    {
+      "paragraph": 5,
+      "text": "Hearosefromthegrave,andourlovedones whosleepin Him, shall arise, too, some glorious morning, there will be a real Easter for all of us, someday, who are Thy followers. Forgive us of our sins now, and bless us and keep us ever close and faithful. For we ask it, in Christ’s Name. Amen.",
+      "normalized_text": "hearosefromthegraveandourlovedones whosleepin him shall arise too some glorious morning there will be a real easter for all of us someday who are thy followers forgive us of our sins now and bless us and keep us ever close and faithful for we ask it in christs name amen"
+    }
+  ]
+}

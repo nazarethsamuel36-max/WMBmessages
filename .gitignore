@@ -85,3 +85,22 @@ Screenshot*.png
 
 # Supabase scripts with service-role credentials
 backfill_normalized_text.js
+
+# Monolithic search index (>100MB; sharded versions search_index_*.json are used)
+public/data/search_index.json
+
+# Scratch, debug, and temp files
+page1_temp.png
+before_after_report.json
+replace_cab_pages_supabase.js
+run_cleanup_rest.js
+run_title_cleanup.js
+scraped_table_cab/
+test_extraction_methods.py
+test_ocr.py
+build_church_age_json.py
+find_false_positives.sql
+find_file.py
+correction/
+migrations/
+

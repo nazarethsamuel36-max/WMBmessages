@@ -477,6 +477,85 @@ body {
   line-height: 1.6;
 }
 
+.message-list-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 10px 14px 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-panel);
+}
+
+.message-list-tabs button {
+  padding: 8px 14px;
+  color: var(--text-muted);
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.message-list-tabs button.active {
+  color: var(--green);
+  border-bottom-color: var(--green);
+}
+
+.series-browser {
+  display: flex;
+  flex-direction: column;
+}
+
+.series-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.series-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  color: var(--text-primary);
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.series-list-item:hover,
+.series-back-button:hover {
+  background: var(--bg-hover);
+}
+
+.series-list-item span:last-child {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.series-back-button {
+  padding: 10px 14px;
+  color: var(--text-dim);
+  text-align: left;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.series-heading {
+  padding: 8px 14px;
+}
+
+.series-empty {
+  padding: 16px 14px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 /* ====================================================
    READER WORKSPACE
 ==================================================== */
@@ -1159,7 +1238,7 @@ body {
 .overlay-quote-text {
   font-size: 50px;
   line-height: 1.3;
-  text-align: justify;
+  text-align: center;
   color: #ffffff;
   font-family: 'Noto Serif', serif;
   white-space: normal;
@@ -1171,6 +1250,7 @@ body {
 
 .overlay-quote-line {
   display: block;
+  text-align: center;
 }
 
 /* ====================================================

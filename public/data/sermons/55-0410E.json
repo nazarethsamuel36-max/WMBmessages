@@ -1,0 +1,35 @@
+{
+  "messageNumber": "55-0410E",
+  "title": "Prayer",
+  "date": "55-0410E",
+  "type": "sermon",
+  "isBook": false,
+  "totalParagraphs": 5,
+  "paragraphs": [
+    {
+      "paragraph": 1,
+      "text": "Our Father, it’s indeed a privilege for us to come to You, to bow our heads in humility to the dust where we were taken from, and someday shall return, if Jesus tarries. But, oh, how we thank Thee for this glorious, marvelous hope that we have, that that dust shall put on immortality someday, and we’ll be made liken unto His Own image. And then we shall see Him as He is, the Lovely One: the One that was crucified for us; buried and rose again the third day; and now setting at the right hand of the Father, making intercessions upon our professions. How we thank Thee for Him",
+      "normalized_text": "our father its indeed a privilege for us to come to you to bow our heads in humility to the dust where we were taken from and someday shall return if jesus tarries but oh how we thank thee for this glorious marvelous hope that we have that that dust shall put on immortality someday and well be made liken unto his own image and then we shall see him as he is the lovely one the one that was crucified for us buried and rose again the third day and now setting at the right hand of the father making intercessions upon our professions how we thank thee for him"
+    },
+    {
+      "paragraph": 2,
+      "text": "We thank Thee for this church tonight, Lord, for this little ol’ tabernacle, though it’s crude: few concrete blocks throwed together by the efforts of some of the people; a little roof over the top; a few seats. But, Lord, You humble Yourself; that’s what we can’t understand. Come down, because it’s all we’ve got to offer You: set You a welcome place in each service. And You come talk with us, commune with us, bless us. And we go home rejoicing, happy. When we’re sick, You meet us here and lay Your healing hand on us; we get well. Oh, we’re so happy about all this; we’re very happy. And we pray, Father, that You’ll continue to be with us.",
+      "normalized_text": "we thank thee for this church tonight lord for this little ol tabernacle though its crude few concrete blocks throwed together by the efforts of some of the people a little roof over the top a few seats but lord you humble yourself thats what we cant understand come down because its all weve got to offer you set you a welcome place in each service and you come talk with us commune with us bless us and we go home rejoicing happy when were sick you meet us here and lay your healing hand on us we get well oh were so happy about all this were very happy and we pray father that youll continue to be with us"
+    },
+    {
+      "paragraph": 3,
+      "text": "Thank You, tonight, for our pastor, Brother Neville. I pray that You’ll be with them, Lord, and his little family there. God bless them. So glad that we’re living in the day that You let our—our paths cross here on earth, that we can be these...have real fellowship around the Word, fellowship with one another.",
+      "normalized_text": "thank you tonight for our pastor brother neville i pray that youll be with them lord and his little family there god bless them so glad that were living in the day that you let our our paths cross here on earth that we can be thesehave real fellowship around the word fellowship with one another"
+    },
+    {
+      "paragraph": 4,
+      "text": "Thank You for Brother Thom, Lord, also, and his lovely little family. For all the other ministers and families in the—in the building tonight, so thankful for all of our friends everywhere. Bless us together now tonight, as the Word may go forth; may It go anointed, Lord: Seed that’s alive coming out of the Bible. “Thy Word have I hid in my heart, O Lord, that I sin not against Thee.”",
+      "normalized_text": "thank you for brother thom lord also and his lovely little family for all the other ministers and families in the in the building tonight so thankful for all of our friends everywhere bless us together now tonight as the word may go forth may it go anointed lord seed thats alive coming out of the bible thy word have i hid in my heart o lord that i sin not against thee"
+    },
+    {
+      "paragraph": 5,
+      "text": "May It go forth tonight and the Seed of God be planted, every heart. And may It bring forth a great, great, service. Grant it, Father. Forgive us of our sins now. Draw us near to Thee, and we’ll praise Thee. In Jesus’ Name, we ask this. Amen.",
+      "normalized_text": "may it go forth tonight and the seed of god be planted every heart and may it bring forth a great great service grant it father forgive us of our sins now draw us near to thee and well praise thee in jesus name we ask this amen"
+    }
+  ]
+}

@@ -2,7 +2,7 @@ import { renderTextToSlides } from './textRenderer';
 import { Paragraph, SermonData, Slide } from '../types';
 
 export const BIBLE_FRAME_SPEC = {
-  quoteWidth: 1800,
+  quoteWidth: 1760,
   quoteHeight: 270,
   fontFamily: "'Noto Serif', serif",
   fontSize: 50,

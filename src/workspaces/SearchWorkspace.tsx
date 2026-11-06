@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext';
 import { searchRouter } from '../search/searchIntent';
 import { buildSearchHighlightRegExp } from '../utils/textNormalizer';
 import { SearchResult } from '../types';
+import { sermonSeries } from '../data/series';
 
 export const SearchWorkspace: React.FC = () => {
   const { state, openMessage, handleSearchResult, setWorkspace } = useApp();
@@ -10,6 +11,8 @@ export const SearchWorkspace: React.FC = () => {
 
   const [results, setResults] = useState<SearchResult[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [listMode, setListMode] = useState<'dates' | 'series'>('dates');
+  const [selectedSeriesId, setSelectedSeriesId] = useState<string | null>(null);
   const [searching, setSearching] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const latestSearchRef = useRef(0);
@@ -88,13 +91,45 @@ export const SearchWorkspace: React.FC = () => {
     return 'type-quote';
   };
 
+  const selectedSeries = sermonSeries.find(series => series.id === selectedSeriesId);
+  const seriesMessages = selectedSeries
+    ? messages
+        .map((message, index) => ({ message, index }))
+        .filter(({ message }) => selectedSeries.messageIds.includes(String(message.id)))
+    : [];
+
   return (
     <div className="search-workspace" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <div className="reader-content" style={{ width: '100%', flex: 1, overflowY: 'auto' }}>
         {searchQuery.trim().length === 0 ? (
           // If no search query, show the full list of messages in the middle (no sidebar)
           <div style={{ display: 'flex', flexDirection: 'column', padding: '0px' }}>
-            <div className="panel-label" style={{ border: 'none', paddingLeft: '14px', paddingTop: '10px' }}>Sermon Messages</div>
+            <div className="message-list-tabs" role="tablist" aria-label="Browse messages">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={listMode === 'dates'}
+                className={listMode === 'dates' ? 'active' : ''}
+                onClick={() => {
+                  setListMode('dates');
+                  setSelectedSeriesId(null);
+                }}
+              >
+                Dates
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={listMode === 'series'}
+                className={listMode === 'series' ? 'active' : ''}
+                onClick={() => setListMode('series')}
+              >
+                Series
+              </button>
+            </div>
+            {listMode === 'dates' ? (
+              <>
+                <div className="panel-label" style={{ border: 'none', paddingLeft: '14px', paddingTop: '10px' }}>Sermon Messages</div>
             {messages.length === 0 ? (
               <div className="loading-msg">Loading messages…</div>
             ) : (
@@ -121,6 +156,53 @@ export const SearchWorkspace: React.FC = () => {
                   <div className="msg-item-title" style={{ fontSize: '13px', color: 'var(--text-primary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{msg.title}</div>
                 </div>
               ))
+            )}
+              </>
+            ) : (
+              <div className="series-browser">
+                {selectedSeries ? (
+                  <>
+                    <button
+                      type="button"
+                      className="series-back-button"
+                      onClick={() => setSelectedSeriesId(null)}
+                    >
+                      ← All series
+                    </button>
+                    <div className="panel-label series-heading">{selectedSeries.title}</div>
+                    {seriesMessages.length > 0 ? seriesMessages.map(({ message, index }) => (
+                      <div
+                        key={message.id}
+                        className={`msg-item ${index === currentMessageIndex ? 'active' : ''}`}
+                        onClick={async () => {
+                          await openMessage(index);
+                          setWorkspace('reader');
+                          window.dispatchEvent(new CustomEvent('readerJumpTo', { detail: { paragraphIndex: 0 } }));
+                        }}
+                      >
+                        <div className="msg-item-date">{message.date}</div>
+                        <div className="msg-item-title">{message.title}</div>
+                      </div>
+                    )) : (
+                      <div className="series-empty">{selectedSeries.note || 'No matching messages found in this library yet.'}</div>
+                    )}
+                  </>
+                ) : (
+                  <div className="series-list">
+                    {sermonSeries.map(series => (
+                      <button
+                        key={series.id}
+                        type="button"
+                        className="series-list-item"
+                        onClick={() => setSelectedSeriesId(series.id)}
+                      >
+                        <span>{series.title}</span>
+                        <span>{series.messageIds.length || '—'}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
           </div>
         ) : (

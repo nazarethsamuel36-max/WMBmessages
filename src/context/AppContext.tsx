@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useReducer, useCallback, useEffect, useRef } from 'react';
 import { Workspace, Message, Paragraph, SermonData, SetlistEntry } from '../types';
-import { getMessages, getParagraphs } from '../services/messageService';
+import { getMessages, getParagraphs, preloadSearchIndex } from '../services/messageService';
 import { parseSermonToSlides, createSlides } from '../parser/sermonParser';
 import { findMatchSlideIndex } from '../utils/textNormalizer';
 
@@ -163,6 +163,7 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   // Load messages once on mount
   useEffect(() => {
+    preloadSearchIndex();
     getMessages()
       .then(msgs => dispatch({ type: 'SET_MESSAGES', payload: msgs }))
       .catch(err => console.error('[AppContext] loadMessages failed:', err));
@@ -177,6 +178,9 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     let paras = current.paragraphs;
 
     if (index !== current.currentMessageIndex) {
+      if (typeof document !== 'undefined' && 'fonts' in document) {
+        await document.fonts.ready;
+      }
       const result = await getParagraphs(msg.id);
       const parsed = parseSermonToSlides({
         messageNumber: result.message.date,
@@ -225,6 +229,18 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       dispatch({ type: 'SET_READING', payload: currentReading });
     }
   }, []);
+
+  // When web fonts finish loading, automatically re-measure to prevent orphan word wraps
+  useEffect(() => {
+    if (typeof document !== 'undefined' && 'fonts' in document) {
+      document.fonts.ready.then(() => {
+        const cur = stateRef.current;
+        if (cur.currentMessageIndex !== -1 && cur.presentationData) {
+          regenerateSlides();
+        }
+      });
+    }
+  }, [regenerateSlides]);
 
   const selectReading = useCallback((pi: number, si: number) => {
     const current = stateRef.current;

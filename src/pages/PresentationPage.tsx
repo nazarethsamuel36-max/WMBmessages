@@ -6,24 +6,10 @@ import { BIBLE_FRAME_SPEC } from '../parser/sermonParser';
 
 export const PresentationPage: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const isPreview = searchParams.get('preview') === 'true'; // ?preview=true displays background image
   const isBanner = searchParams.get('banner') === 'true'; // ?banner=true creates 30% height banner
 
   const [activeSlide, setActiveSlide] = useState<Slide | null>(null);
   const [isActive, setIsActive] = useState<boolean>(false);
-  const [viewportSize, setViewportSize] = useState({
-    width: window.innerWidth,
-    height: window.innerHeight,
-  });
-
-  useEffect(() => {
-    const updateViewportSize = () => {
-      setViewportSize({ width: window.innerWidth, height: window.innerHeight });
-    };
-
-    window.addEventListener('resize', updateViewportSize);
-    return () => window.removeEventListener('resize', updateViewportSize);
-  }, []);
 
   // BroadcastChannel and localStorage listeners for instant updates
   useEffect(() => {
@@ -89,7 +75,7 @@ export const PresentationPage: React.FC = () => {
   const metaDate = activeSlide?.metadata?.date || '';
   const metaTitle = activeSlide?.metadata?.title || '';
   const paraNumber = activeSlide?.metadata?.paragraph || '';
-  const isCabBook = /^CAB-(0[1-9]|1[01])$/i.test(metaDate.trim());
+  const isCabBook = /^CAB-(0[0-9]|1[01])$/i.test(metaDate.trim());
 
   // Re-wrap legacy slides (stored as a single long line) through the balanced
   // parser so the overlay always receives real per-line data for centering.
@@ -107,23 +93,7 @@ export const PresentationPage: React.FC = () => {
 
   return (
     <div className={`presentation-canvas-container ${isBanner ? 'banner-mode' : ''}`}>
-      <div className="presentation-size-indicator" aria-label="Browser viewport size">
-        {viewportSize.width} × {viewportSize.height} CSS px
-      </div>
-
-      {/* Background Image (Rendered only if ?preview=true parameter is set, otherwise transparent for OBS keying) */}
-      {isPreview && (
-        <>
-          <img
-            className="presentation-bg-image"
-            src="Screenshot 2026-07-21 215142.png"
-            alt="Presentation background"
-          />
-          <div className="presentation-gradient-overlay"></div>
-        </>
-      )}
-
-      {/* Lower Third presentation block */}
+{/* Lower Third presentation block */}
       <div className={`lower-third ${isActive ? 'active' : ''}`}>
         <div className="overlay-metadata-bar">
           {!isCabBook && <div className="overlay-year">{metaDate}</div>}
